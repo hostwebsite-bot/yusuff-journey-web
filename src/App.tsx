@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -16,7 +17,14 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          {/* Future routes will be added for:
+          <Route path="/about" element={<About />} />
+          <Route path="/book" element={<Book />} />
+          <Route path="/daytopia" element={<Daytopia />} />
+          <Route path="/vacua" element={<Vacua />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:slug" element={<BlogPost />} />
+          <Route path="/contact" element={<Contact />} /> */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
