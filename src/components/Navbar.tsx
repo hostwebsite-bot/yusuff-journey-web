@@ -1,11 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -20,8 +21,17 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Close mobile menu when changing routes
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location]);
+
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const isActive = (path: string) => {
+    return location.pathname === path ? "font-bold" : "";
   };
 
   return (
@@ -33,13 +43,19 @@ const Navbar = () => {
         
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-8">
-          <Link to="/" className="font-montserrat font-medium text-navy hover:text-navy-light transition">Home</Link>
-          <Link to="/about" className="font-montserrat font-medium text-navy hover:text-navy-light transition">About</Link>
-          <Link to="/book" className="font-montserrat font-medium text-navy hover:text-navy-light transition">Book</Link>
-          <Link to="/daytopia" className="font-montserrat font-medium text-navy hover:text-navy-light transition">Daytopia</Link>
-          <Link to="/blog" className="font-montserrat font-medium text-navy hover:text-navy-light transition">Blog</Link>
-          <Link to="/contact" className="font-montserrat font-medium text-navy hover:text-navy-light transition">Contact</Link>
-          <Button className="bg-navy hover:bg-navy-light text-white ml-2">Buy Book</Button>
+          <Link to="/" className={`font-montserrat font-medium text-navy hover:text-navy-light transition ${isActive("/")}`}>Home</Link>
+          <Link to="/about" className={`font-montserrat font-medium text-navy hover:text-navy-light transition ${isActive("/about")}`}>About</Link>
+          <Link to="/books" className={`font-montserrat font-medium text-navy hover:text-navy-light transition ${isActive("/books")}`}>Books</Link>
+          <Link to="/daytopia" className={`font-montserrat font-medium text-navy hover:text-navy-light transition ${isActive("/daytopia")}`}>Daytopia</Link>
+          <Link to="/vacua" className={`font-montserrat font-medium text-navy hover:text-navy-light transition ${isActive("/vacua")}`}>Vacua</Link>
+          <Link to="/blog" className={`font-montserrat font-medium text-navy hover:text-navy-light transition ${isActive("/blog")}`}>Blog</Link>
+          <Link to="/contact" className={`font-montserrat font-medium text-navy hover:text-navy-light transition ${isActive("/contact")}`}>Contact</Link>
+          <Button 
+            className="bg-navy hover:bg-navy-light text-white ml-2" 
+            onClick={() => window.location.href = '/book'}
+          >
+            Buy Book
+          </Button>
         </div>
 
         {/* Mobile Menu Button */}
@@ -57,14 +73,15 @@ const Navbar = () => {
       {isMobileMenuOpen && (
         <div className="md:hidden bg-white shadow-lg absolute w-full">
           <div className="container mx-auto py-4 flex flex-col gap-4">
-            <Link to="/" className="font-montserrat font-medium text-navy hover:text-navy-light px-4 py-2" onClick={() => setIsMobileMenuOpen(false)}>Home</Link>
-            <Link to="/about" className="font-montserrat font-medium text-navy hover:text-navy-light px-4 py-2" onClick={() => setIsMobileMenuOpen(false)}>About</Link>
-            <Link to="/book" className="font-montserrat font-medium text-navy hover:text-navy-light px-4 py-2" onClick={() => setIsMobileMenuOpen(false)}>Book</Link>
-            <Link to="/daytopia" className="font-montserrat font-medium text-navy hover:text-navy-light px-4 py-2" onClick={() => setIsMobileMenuOpen(false)}>Daytopia</Link>
-            <Link to="/blog" className="font-montserrat font-medium text-navy hover:text-navy-light px-4 py-2" onClick={() => setIsMobileMenuOpen(false)}>Blog</Link>
-            <Link to="/contact" className="font-montserrat font-medium text-navy hover:text-navy-light px-4 py-2" onClick={() => setIsMobileMenuOpen(false)}>Contact</Link>
+            <Link to="/" className={`font-montserrat font-medium text-navy hover:text-navy-light px-4 py-2 ${isActive("/")}`}>Home</Link>
+            <Link to="/about" className={`font-montserrat font-medium text-navy hover:text-navy-light px-4 py-2 ${isActive("/about")}`}>About</Link>
+            <Link to="/books" className={`font-montserrat font-medium text-navy hover:text-navy-light px-4 py-2 ${isActive("/books")}`}>Books</Link>
+            <Link to="/daytopia" className={`font-montserrat font-medium text-navy hover:text-navy-light px-4 py-2 ${isActive("/daytopia")}`}>Daytopia</Link>
+            <Link to="/vacua" className={`font-montserrat font-medium text-navy hover:text-navy-light px-4 py-2 ${isActive("/vacua")}`}>Vacua</Link>
+            <Link to="/blog" className={`font-montserrat font-medium text-navy hover:text-navy-light px-4 py-2 ${isActive("/blog")}`}>Blog</Link>
+            <Link to="/contact" className={`font-montserrat font-medium text-navy hover:text-navy-light px-4 py-2 ${isActive("/contact")}`}>Contact</Link>
             <div className="px-4 py-2">
-              <Button className="w-full bg-navy hover:bg-navy-light text-white">Buy Book</Button>
+              <Button className="w-full bg-navy hover:bg-navy-light text-white" onClick={() => window.location.href = '/book'}>Buy Book</Button>
             </div>
           </div>
         </div>
