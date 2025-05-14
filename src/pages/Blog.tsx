@@ -21,7 +21,7 @@ const Blog = () => {
   
   const blogPosts = [
     {
-      id: '1',
+      id: 'financial-habits-students',
       title: 'The Impact of Financial Literacy on Academic Success',
       excerpt: 'Exploring the often-overlooked connection between understanding personal finance and achieving academic excellence.',
       category: 'finance',
@@ -30,7 +30,7 @@ const Blog = () => {
       image: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3'
     },
     {
-      id: '2',
+      id: 'passion-purpose-education',
       title: '5 Study Techniques That Actually Work, According to Science',
       excerpt: 'Evidence-based approaches to studying that can dramatically improve retention and understanding of complex material.',
       category: 'education',
@@ -39,7 +39,7 @@ const Blog = () => {
       image: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3'
     },
     {
-      id: '3',
+      id: 'entrepreneurial-mindset-students',
       title: 'Building Your First Business While Still in School',
       excerpt: 'A practical guide for students looking to develop entrepreneurial skills and launch their first venture before graduation.',
       category: 'entrepreneurship',
@@ -82,6 +82,12 @@ const Blog = () => {
     post.excerpt.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Function to handle search submission
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    // The search is already being handled by the useState hook and filteredPosts
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -96,7 +102,7 @@ const Blog = () => {
             <p className="text-lg md:text-xl text-white/90 mb-8 animate-fade-in" style={{ animationDelay: '0.2s' }}>
               Expert perspectives on finance, education, entrepreneurship, and personal development
             </p>
-            <div className="flex max-w-md mx-auto animate-fade-in" style={{ animationDelay: '0.4s' }}>
+            <form onSubmit={handleSearch} className="flex max-w-md mx-auto animate-fade-in" style={{ animationDelay: '0.4s' }}>
               <Input 
                 type="text" 
                 placeholder="Search articles..." 
@@ -104,10 +110,10 @@ const Blog = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <Button className="ml-2 bg-gold text-navy hover:bg-gold-dark">
+              <Button type="submit" className="ml-2 bg-gold text-navy hover:bg-gold-dark">
                 Search
               </Button>
-            </div>
+            </form>
           </div>
         </div>
       </section>
@@ -159,9 +165,11 @@ const Blog = () => {
                           </p>
                         </CardContent>
                         <CardFooter className="px-6 pb-6 pt-0">
-                          <Button variant="outline" className="w-full border-navy text-navy hover:bg-navy hover:text-white">
-                            Read Article
-                          </Button>
+                          <Link to={`/blog/${post.id}`} className="w-full">
+                            <Button variant="outline" className="w-full border-navy text-navy hover:bg-navy hover:text-white">
+                              Read Article
+                            </Button>
+                          </Link>
                         </CardFooter>
                       </Card>
                     ))

@@ -12,6 +12,8 @@ import Vacua from "./pages/Vacua";
 import Blog from "./pages/Blog";
 import Books from "./pages/Books";
 import NotFound from "./pages/NotFound";
+import BookDetail from "./pages/BookDetail";
+import BlogPost from "./pages/BlogPost";
 
 const queryClient = new QueryClient();
 
@@ -28,10 +30,9 @@ const App = () => (
           <Route path="/daytopia" element={<Daytopia />} />
           <Route path="/vacua" element={<Vacua />} />
           <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:blogId" element={<BlogPost />} />
           <Route path="/books" element={<Books />} />
-          {/* Future routes will be added for:
-          <Route path="/blog/:slug" element={<BlogPost />} />
-          <Route path="/contact" element={<Contact />} /> */}
+          <Route path="/books/:bookId" element={<BookDetail />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

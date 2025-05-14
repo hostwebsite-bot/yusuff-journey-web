@@ -125,7 +125,7 @@ const Books = () => {
                 </div>
               </div>
               <div className="flex flex-wrap gap-4">
-                <Link to="/book">
+                <Link to="/books/jbgs">
                   <Button className="bg-navy hover:bg-navy-light text-white">
                     Learn More
                   </Button>
@@ -148,7 +148,7 @@ const Books = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {books.map((book) => (
-              <Card key={book.id} className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
+              <Card key={book.id} className="overflow-hidden hover:shadow-lg transition-shadow duration-300 transform hover:-translate-y-1">
                 <div className="flex justify-center p-6 bg-gradient-to-br from-navy/5 to-navy/10">
                   <div className="w-40 h-56 relative">
                     <img 
@@ -179,10 +179,12 @@ const Books = () => {
                     ))}
                   </div>
                   <div className="flex gap-3">
-                    <Button className="flex-1 bg-navy hover:bg-navy-light text-white">
-                      <BookOpen className="mr-2 h-4 w-4" />
-                      Details
-                    </Button>
+                    <Link to={`/books/${book.id}`} className="flex-1">
+                      <Button className="w-full bg-navy hover:bg-navy-light text-white">
+                        <BookOpen className="mr-2 h-4 w-4" />
+                        Details
+                      </Button>
+                    </Link>
                     <Button variant="outline" className="flex-1 border-navy text-navy hover:bg-navy/10">
                       Buy Now
                     </Button>
