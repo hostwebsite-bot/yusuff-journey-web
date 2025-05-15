@@ -1,9 +1,30 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
+interface LoginResponse {
+  token: string;
+}
+
+interface SocialMediaData {
+  facebookUrl: string;
+  twitterUrl: string;
+  instagramUrl: string;
+  linkedinUrl: string;
+  updatedBy?: string;
+  _id?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  __v?: number;
+}
+
+interface SocialMediaResponse {
+  status: string;
+  data: SocialMediaData;
+}
+
 export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({ 
-    baseUrl: 'YOUR_API_BASE_URL',
+    baseUrl: 'https://yusuff-o2ml.onrender.com/api',
     prepareHeaders: (headers, { getState }) => {
       const token = (getState() as any).auth.token;
       if (token) {
@@ -13,14 +34,28 @@ export const apiSlice = createApi({
     },
   }),
   endpoints: (builder) => ({
-    login: builder.mutation<{ token: string }, any>({
+    login: builder.mutation<LoginResponse, { email: string; password: string }>({
       query: (credentials) => ({
-        url: '/login',
+        url: '/admin/login',
         method: 'POST',
         body: credentials,
+      }),
+    }),
+    getSocialMedia: builder.query<SocialMediaResponse, void>({
+      query: () => '/admin/social-media',
+    }),
+    updateSocialMedia: builder.mutation<SocialMediaResponse, SocialMediaData>({
+      query: (data) => ({
+        url: '/admin/social-media',
+        method: 'PUT',
+        body: data,
       }),
     }),
   }),
 });
 
-export const { useLoginMutation } = apiSlice;
+export const { 
+  useLoginMutation,
+  useGetSocialMediaQuery,
+  useUpdateSocialMediaMutation,
+} = apiSlice;

@@ -1,10 +1,10 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from '@/components/ui/sonner';
 import { Settings as SettingsIcon, Save, Shield } from "lucide-react";
+import { useGetSocialMediaQuery, useUpdateSocialMediaMutation } from '@/services/api/apiSlice';
 
 const Settings = () => {
   const [generalSettings, setGeneralSettings] = useState({
@@ -16,10 +16,10 @@ const Settings = () => {
   });
 
   const [socialSettings, setSocialSettings] = useState({
-    facebook: "https://facebook.com/dryusuff",
-    twitter: "https://twitter.com/dryusuff",
-    instagram: "https://instagram.com/dryusuff",
-    linkedin: "https://linkedin.com/in/dryusuff"
+    facebook: "",
+    twitter: "",
+    instagram: "",
+    linkedin: ""
   });
 
   const [securitySettings, setSecuritySettings] = useState({
@@ -57,9 +57,33 @@ const Settings = () => {
     toast.success("General settings saved successfully");
   };
 
-  const saveSocialSettings = (e: React.FormEvent) => {
+  const { data: socialMediaData, isLoading: isSocialMediaLoading } = useGetSocialMediaQuery();
+  const [updateSocialMedia, { isLoading: isUpdatingSocialMedia }] = useUpdateSocialMediaMutation();
+
+  useEffect(() => {
+    if (socialMediaData) {
+      setSocialSettings({
+        facebook: socialMediaData.data.facebookUrl,
+        twitter: socialMediaData.data.twitterUrl,
+        instagram: socialMediaData.data.instagramUrl,
+        linkedin: socialMediaData.data.linkedinUrl,
+      });
+    }
+  }, [socialMediaData]);
+
+  const saveSocialSettings = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Social media settings saved successfully");
+    try {
+      await updateSocialMedia({
+        facebookUrl: socialSettings.facebook,
+        twitterUrl: socialSettings.twitter,
+        instagramUrl: socialSettings.instagram,
+        linkedinUrl: socialSettings.linkedin,
+      }).unwrap();
+      toast.success("Social media settings saved successfully");
+    } catch (error) {
+      toast.error("Failed to save social media settings");
+    }
   };
 
   const saveSecuritySettings = (e: React.FormEvent) => {
@@ -211,9 +235,13 @@ const Settings = () => {
                   />
                 </div>
                 
-                <Button type="submit" className="mt-4">
+                <Button 
+                  type="submit" 
+                  className="mt-4"
+                  disabled={isUpdatingSocialMedia}
+                >
                   <Save size={18} className="mr-2" />
-                  Save Social Links
+                  {isUpdatingSocialMedia ? "Saving..." : "Save Social Links"}
                 </Button>
               </form>
             </CardContent>
