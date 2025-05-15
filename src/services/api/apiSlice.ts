@@ -1,9 +1,24 @@
 
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-// Simple interfaces to avoid complex type inference issues
+// Define interfaces for API responses and data
 interface LoginResponse {
   token: string;
+}
+
+// Book interface that matches both admin and public pages
+interface Book {
+  id: string;
+  title: string;
+  shortTitle?: string;
+  subtitle: string;
+  author: string;
+  description: string;
+  price: number;
+  published: string;
+  image: string;
+  featured?: boolean;
+  categories?: string[];
 }
 
 interface SocialMediaData {

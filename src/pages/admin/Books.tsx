@@ -8,46 +8,85 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from '@/components/ui/sonner';
 import { Plus, Edit, Trash2 } from "lucide-react";
 
+// Book interface to match with the public pages
+interface Book {
+  id: string;
+  title: string;
+  shortTitle?: string;
+  subtitle: string;
+  author: string;
+  description: string;
+  price: number;
+  published: string;
+  image: string;
+  featured?: boolean;
+  categories?: string[];
+}
+
 const Books = () => {
   const [open, setOpen] = useState(false);
-  const [editingBook, setEditingBook] = useState<any>(null);
+  const [editingBook, setEditingBook] = useState<Book | null>(null);
   
-  // Mock book data
-  const [books, setBooks] = useState([
+  // Mock book data aligned with public book pages
+  const [books, setBooks] = useState<Book[]>([
     {
       id: "jbgs",
-      title: "Just Be Great Somehow",
+      title: "The Journey to Becoming a Great Student",
+      shortTitle: "#JBGS",
       subtitle: "A Journey to Excellence",
       author: "Dr. Awosanya Yusuff",
       description: "A comprehensive roadmap that bridges the gap between academic excellence and real-world success.",
-      price: 29.99,
+      price: 24.99,
       published: "2022-06-15",
-      image: "/placeholder.svg"
+      image: "/lovable-uploads/ac1830de-9ab7-4ac8-b7e3-93b41071cb14.png",
+      featured: true,
+      categories: ["Academic Excellence", "Financial Literacy", "Personal Development"]
     },
     {
       id: "vacua",
       title: "Vacua",
+      shortTitle: "Vacua",
       subtitle: "The Power of Empty Spaces",
       author: "Dr. Awosanya Yusuff",
       description: "An exploration of how embracing emptiness can lead to profound personal growth and creativity.",
       price: 24.99,
       published: "2023-03-22",
-      image: "/placeholder.svg"
+      image: "/placeholder.svg",
+      featured: false,
+      categories: ["Personal Development", "Philosophy"]
+    },
+    {
+      id: "financial-wisdom",
+      title: "Financial Wisdom for Young Professionals",
+      shortTitle: "Financial Wisdom",
+      subtitle: "Essential Money Management",
+      author: "Dr. Awosanya Yusuff",
+      description: "Essential financial knowledge for young adults entering the professional world.",
+      price: 22.99,
+      published: "2024-01-15",
+      image: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+      featured: false,
+      categories: ["Finance", "Career Development", "Investing"]
     }
   ]);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<Book>({
     id: "",
     title: "",
+    shortTitle: "",
     subtitle: "",
     author: "",
     description: "",
     price: 0,
     published: "",
-    image: ""
+    image: "",
+    featured: false,
+    categories: []
   });
 
-  const handleOpenDialog = (book = null) => {
+  const [categoryInput, setCategoryInput] = useState("");
+
+  const handleOpenDialog = (book: Book | null = null) => {
     if (book) {
       setFormData(book);
       setEditingBook(book);
@@ -55,29 +94,57 @@ const Books = () => {
       setFormData({
         id: "",
         title: "",
+        shortTitle: "",
         subtitle: "",
         author: "",
         description: "",
         price: 0,
         published: "",
-        image: ""
+        image: "",
+        featured: false,
+        categories: []
       });
       setEditingBook(null);
     }
+    setCategoryInput("");
     setOpen(true);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name === "price" ? parseFloat(value) : value
+      [name]: type === "checkbox" ? checked : 
+              name === "price" ? parseFloat(value) : 
+              value
+    }));
+  };
+
+  const handleAddCategory = () => {
+    if (categoryInput.trim() && !formData.categories?.includes(categoryInput.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        categories: [...(prev.categories || []), categoryInput.trim()]
+      }));
+      setCategoryInput("");
+    }
+  };
+
+  const handleRemoveCategory = (category: string) => {
+    setFormData(prev => ({
+      ...prev,
+      categories: prev.categories?.filter(c => c !== category) || []
     }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Generate shortTitle if not provided
+    if (!formData.shortTitle && formData.title) {
+      formData.shortTitle = formData.title.split(' ').slice(0, 2).join(' ');
+    }
+
     if (editingBook) {
       // Update existing book
       setBooks(books.map(book => book.id === editingBook.id ? formData : book));
@@ -121,6 +188,7 @@ const Books = () => {
               <TableHead>Author</TableHead>
               <TableHead>Price</TableHead>
               <TableHead>Published</TableHead>
+              <TableHead>Featured</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -134,6 +202,7 @@ const Books = () => {
                 <TableCell>{book.author}</TableCell>
                 <TableCell>${book.price.toFixed(2)}</TableCell>
                 <TableCell>{book.published}</TableCell>
+                <TableCell>{book.featured ? "Yes" : "No"}</TableCell>
                 <TableCell className="text-right">
                   <Button variant="ghost" size="sm" onClick={() => handleOpenDialog(book)}>
                     <Edit size={16} />
@@ -149,7 +218,7 @@ const Books = () => {
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[700px]">
           <DialogHeader>
             <DialogTitle>{editingBook ? "Edit Book" : "Add New Book"}</DialogTitle>
             <DialogDescription>
@@ -170,16 +239,27 @@ const Books = () => {
                   />
                 </div>
                 <div className="space-y-2">
+                  <label htmlFor="shortTitle" className="text-sm font-medium">Short Title</label>
+                  <Input
+                    id="shortTitle"
+                    name="shortTitle"
+                    value={formData.shortTitle || ""}
+                    onChange={handleChange}
+                    placeholder="Short title or nickname"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
                   <label htmlFor="subtitle" className="text-sm font-medium">Subtitle</label>
                   <Input
                     id="subtitle"
                     name="subtitle"
                     value={formData.subtitle}
                     onChange={handleChange}
+                    required
                   />
                 </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label htmlFor="author" className="text-sm font-medium">Author</label>
                   <Input
@@ -190,6 +270,8 @@ const Books = () => {
                     required
                   />
                 </div>
+              </div>
+              <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <label htmlFor="price" className="text-sm font-medium">Price ($)</label>
                   <Input
@@ -200,19 +282,6 @@ const Books = () => {
                     value={formData.price}
                     onChange={handleChange}
                     required
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label htmlFor="id" className="text-sm font-medium">ID/Slug</label>
-                  <Input
-                    id="id"
-                    name="id"
-                    value={formData.id}
-                    onChange={handleChange}
-                    placeholder="book-slug (auto-generated if empty)"
-                    disabled={!!editingBook}
                   />
                 </div>
                 <div className="space-y-2">
@@ -226,16 +295,45 @@ const Books = () => {
                     required
                   />
                 </div>
+                <div className="space-y-2">
+                  <label htmlFor="id" className="text-sm font-medium">ID/Slug</label>
+                  <Input
+                    id="id"
+                    name="id"
+                    value={formData.id}
+                    onChange={handleChange}
+                    placeholder="book-slug (auto-generated if empty)"
+                    disabled={!!editingBook}
+                  />
+                </div>
               </div>
-              <div className="space-y-2">
-                <label htmlFor="image" className="text-sm font-medium">Image URL</label>
-                <Input
-                  id="image"
-                  name="image"
-                  value={formData.image}
-                  onChange={handleChange}
-                  placeholder="/images/book-cover.jpg"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label htmlFor="image" className="text-sm font-medium">Image URL</label>
+                  <Input
+                    id="image"
+                    name="image"
+                    value={formData.image}
+                    onChange={handleChange}
+                    placeholder="/images/book-cover.jpg"
+                  />
+                </div>
+                <div className="space-y-2 flex items-end">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="featured" 
+                      name="featured"
+                      checked={formData.featured || false}
+                      onCheckedChange={(checked) => {
+                        setFormData(prev => ({
+                          ...prev,
+                          featured: checked === true
+                        }));
+                      }}
+                    />
+                    <label htmlFor="featured" className="text-sm font-medium">Featured Book</label>
+                  </div>
+                </div>
               </div>
               <div className="space-y-2">
                 <label htmlFor="description" className="text-sm font-medium">Description</label>
@@ -246,6 +344,38 @@ const Books = () => {
                   onChange={handleChange}
                   className="h-20"
                 />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Categories</label>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {formData.categories?.map((category, index) => (
+                    <div key={index} className="bg-gray-100 px-3 py-1 rounded-full flex items-center">
+                      <span className="text-sm">{category}</span>
+                      <button 
+                        type="button"
+                        onClick={() => handleRemoveCategory(category)}
+                        className="ml-2 text-gray-500 hover:text-red-500"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex space-x-2">
+                  <Input 
+                    value={categoryInput}
+                    onChange={(e) => setCategoryInput(e.target.value)}
+                    placeholder="Add a category"
+                  />
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={handleAddCategory}
+                    disabled={!categoryInput.trim()}
+                  >
+                    Add
+                  </Button>
+                </div>
               </div>
             </div>
             <DialogFooter>
