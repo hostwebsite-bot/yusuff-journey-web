@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Book from "./pages/Book";
 import About from "./pages/About";
+import Contact from "./pages/Contact";
 import Daytopia from "./pages/Daytopia";
 import Vacua from "./pages/Vacua";
 import Blog from "./pages/Blog";
@@ -47,6 +48,7 @@ const App = () => (
           <Route path="/blog/:blogId" element={<BlogPost />} />
           <Route path="/books" element={<Books />} />
           <Route path="/books/:bookId" element={<BookDetail />} />
+          <Route path="/contact" element={<Contact />} />
           
           {/* Admin routes - not visible in navigation */}
           <Route path="/admin" element={<Login />} />

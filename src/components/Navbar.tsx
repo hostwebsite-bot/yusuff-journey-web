@@ -81,7 +81,7 @@ const Navbar = () => {
             <Link to="/blog" className={`font-montserrat font-medium text-navy hover:text-navy-light px-4 py-2 ${isActive("/blog")}`}>Blog</Link>
             <Link to="/contact" className={`font-montserrat font-medium text-navy hover:text-navy-light px-4 py-2 ${isActive("/contact")}`}>Contact</Link>
             <div className="px-4 py-2">
-              <Button className="w-full bg-navy hover:bg-navy-light text-white" onClick={() => window.location.href = '/book'}>Buy Book</Button>
+              <Button className="w-full bg-navy hover:bg-navy-light text-white" onClick={() => window.location.href = '/books'}>Buy Book</Button>
             </div>
           </div>
         </div>
