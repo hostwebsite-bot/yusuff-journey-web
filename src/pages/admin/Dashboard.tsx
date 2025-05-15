@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Book, Users, FileText, Eye, ArrowUp, ArrowDown } from "lucide-react";
+import { Book, Users, FileText, Eye, ArrowUp, ArrowDown, Mail } from "lucide-react";
 
 const Dashboard = () => {
   // Mock data for dashboard

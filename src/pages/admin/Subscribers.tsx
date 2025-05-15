@@ -105,7 +105,6 @@ const Subscribers = () => {
               <TableHead className="w-[50px]">
                 <Checkbox 
                   checked={selectedIds.length === filteredSubscribers.length && filteredSubscribers.length > 0}
-                  indeterminate={selectedIds.length > 0 && selectedIds.length < filteredSubscribers.length}
                   onCheckedChange={handleSelectAll}
                 />
               </TableHead>

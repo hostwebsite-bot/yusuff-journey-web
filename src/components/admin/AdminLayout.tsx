@@ -2,7 +2,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate, Link, Outlet } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Book, Mail, Dashboard, Users, Settings, LogIn, FileText } from "lucide-react";
+import { LayoutDashboard, Book, Mail, Users, Settings, LogIn, FileText } from "lucide-react";
 
 const AdminLayout = () => {
   const navigate = useNavigate();
@@ -31,7 +31,7 @@ const AdminLayout = () => {
           <div className="flex flex-col flex-1 py-4">
             <nav className="flex-1">
               <Link to="/admin/dashboard" className="flex items-center px-6 py-3 text-white hover:bg-navy-light">
-                <Dashboard size={20} className="mr-3" />
+                <LayoutDashboard size={20} className="mr-3" />
                 <span>Dashboard</span>
               </Link>
               <Link to="/admin/books" className="flex items-center px-6 py-3 text-white hover:bg-navy-light">
@@ -85,7 +85,7 @@ const AdminLayout = () => {
           <div className="flex flex-col h-full">
             <nav className="flex-1">
               <Link to="/admin/dashboard" className="flex items-center px-6 py-4 text-white hover:bg-navy-light" onClick={() => document.getElementById('mobile-menu')?.classList.add('hidden')}>
-                <Dashboard size={20} className="mr-3" />
+                <LayoutDashboard size={20} className="mr-3" />
                 <span>Dashboard</span>
               </Link>
               <Link to="/admin/books" className="flex items-center px-6 py-4 text-white hover:bg-navy-light" onClick={() => document.getElementById('mobile-menu')?.classList.add('hidden')}>
