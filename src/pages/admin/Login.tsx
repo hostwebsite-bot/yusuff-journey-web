@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -10,6 +9,9 @@ import { toast } from '@/components/ui/sonner';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useLoginMutation } from '@/services/api/apiSlice';
+import { useDispatch } from 'react-redux';
+import { setCredentials } from '@/services/auth/authSlice';
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -20,12 +22,9 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 const Login = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
-  
-  // Hardcoded admin credentials for demonstration
-  // In a real app, this would be handled by a backend authentication service
-  const ADMIN_EMAIL = "admin@example.com";
-  const ADMIN_PASSWORD = "adminpassword";
+  const [login, { isLoading }] = useLoginMutation();
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -35,14 +34,13 @@ const Login = () => {
     },
   });
 
-  const onSubmit = (data: LoginFormValues) => {
-    // Simple authentication logic for demonstration
-    if (data.email === ADMIN_EMAIL && data.password === ADMIN_PASSWORD) {
-      // Set admin auth in localStorage
-      localStorage.setItem('adminAuth', 'true');
+  const onSubmit = async (data: LoginFormValues) => {
+    try {
+      const result = await login(data).unwrap();
+      dispatch(setCredentials(result));
       toast.success("Login successful");
       navigate("/admin/dashboard");
-    } else {
+    } catch (error) {
       toast.error("Invalid credentials. Please try again.");
     }
   };
@@ -114,8 +112,9 @@ const Login = () => {
               <Button 
                 type="submit" 
                 className="w-full"
+                disabled={isLoading}
               >
-                Sign In
+                {isLoading ? "Signing in..." : "Sign In"}
               </Button>
             </form>
           </Form>
