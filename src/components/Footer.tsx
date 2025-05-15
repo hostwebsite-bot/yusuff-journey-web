@@ -1,9 +1,30 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useSubscribeNewsletterMutation } from '@/services/api/apiSlice';
+import { toast } from 'sonner';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const [email, setEmail] = useState('');
+  const [subscribeNewsletter, { isLoading }] = useSubscribeNewsletterMutation();
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email) {
+      toast.error('Please enter your email address');
+      return;
+    }
+    
+    try {
+      const response = await subscribeNewsletter({ email }).unwrap();
+      toast.success(response.message || 'Successfully subscribed to newsletter');
+      setEmail('');
+    } catch (error: any) {
+      toast.error(error.data?.message || 'Failed to subscribe to newsletter. Please try again later.');
+    }
+  };
 
   return (
     <footer className="bg-navy text-white">
@@ -77,7 +98,7 @@ const Footer = () => {
                 <span className="text-gray-300">+44 (0) 123 456 7890</span>
               </li>
             </ul>
-            <form className="mt-4">
+            <form className="mt-4" onSubmit={handleSubscribe}>
               <label htmlFor="newsletter" className="text-gray-300 block mb-2">Subscribe to Newsletter</label>
               <div className="flex">
                 <input 
@@ -85,12 +106,16 @@ const Footer = () => {
                   id="newsletter" 
                   placeholder="Your email"
                   className="p-2 text-gray-900 flex-1 rounded-l-md focus:outline-none" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
                 />
                 <button 
                   type="submit"
-                  className="bg-gold text-navy px-4 font-montserrat font-medium rounded-r-md hover:bg-gold-dark transition"
+                  className="bg-gold text-navy px-4 font-montserrat font-medium rounded-r-md hover:bg-gold-dark transition disabled:bg-opacity-70"
+                  disabled={isLoading}
                 >
-                  Subscribe
+                  {isLoading ? 'Subscribing...' : 'Subscribe'}
                 </button>
               </div>
             </form>

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -7,9 +6,13 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Link } from 'react-router-dom';
+import { useSubscribeNewsletterMutation } from '@/services/api/apiSlice';
+import { toast } from 'sonner';
 
 const Blog = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [subscribeNewsletter, { isLoading }] = useSubscribeNewsletterMutation();
   
   const categories = [
     { id: 'all', name: 'All Articles' },
@@ -86,6 +89,24 @@ const Blog = () => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     // The search is already being handled by the useState hook and filteredPosts
+  };
+
+  // Function to handle newsletter subscription
+  const handleNewsletterSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!newsletterEmail) {
+      toast.error('Please enter your email address');
+      return;
+    }
+    
+    try {
+      const response = await subscribeNewsletter({ email: newsletterEmail }).unwrap();
+      toast.success(response.message || 'Successfully subscribed to newsletter');
+      setNewsletterEmail('');
+    } catch (error: any) {
+      toast.error(error.data?.message || 'Failed to subscribe to newsletter. Please try again later.');
+    }
   };
 
   return (
@@ -207,16 +228,23 @@ const Blog = () => {
               Subscribe to our newsletter to receive the latest articles, insights, and updates 
               on finance, education, and personal development directly in your inbox.
             </p>
-            <div className="flex flex-col sm:flex-row max-w-md mx-auto gap-3">
+            <form onSubmit={handleNewsletterSubscribe} className="flex flex-col sm:flex-row max-w-md mx-auto gap-3">
               <Input 
                 type="email" 
                 placeholder="Your email address" 
                 className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
+                required
               />
-              <Button className="bg-gold text-navy hover:bg-gold-dark">
-                Subscribe
+              <Button 
+                className="bg-gold text-navy hover:bg-gold-dark disabled:bg-opacity-70"
+                disabled={isLoading}
+                type="submit"
+              >
+                {isLoading ? 'Subscribing...' : 'Subscribe'}
               </Button>
-            </div>
+            </form>
           </div>
         </div>
       </section>

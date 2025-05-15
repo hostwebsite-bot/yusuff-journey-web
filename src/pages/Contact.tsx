@@ -1,11 +1,35 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ContactSection from '@/components/ContactSection';
 import { motion } from 'framer-motion';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { useSubscribeNewsletterMutation } from '@/services/api/apiSlice';
+import { toast } from 'sonner';
 
 const Contact = () => {
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [subscribeNewsletter, { isLoading }] = useSubscribeNewsletterMutation();
+
+  const handleNewsletterSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!newsletterEmail) {
+      toast.error('Please enter your email address');
+      return;
+    }
+    
+    try {
+      const response = await subscribeNewsletter({ email: newsletterEmail }).unwrap();
+      toast.success(response.message || 'Successfully subscribed to newsletter');
+      setNewsletterEmail('');
+    } catch (error: any) {
+      toast.error(error.data?.message || 'Failed to subscribe to newsletter. Please try again later.');
+    }
+  };
+
   return (
     <div className="min-h-screen">
       <Navbar />
@@ -30,6 +54,37 @@ const Contact = () => {
       </section>
       
       <ContactSection />
+      
+      {/* Newsletter Section */}
+      <section className="py-12 bg-navy text-white">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="font-montserrat font-bold text-3xl mb-6">
+              Subscribe to My Newsletter
+            </h2>
+            <p className="text-white/90 mb-8">
+              Stay updated with my latest articles, events, and insights.
+            </p>
+            <form onSubmit={handleNewsletterSubscribe} className="flex flex-col sm:flex-row max-w-md mx-auto gap-3">
+              <Input 
+                type="email" 
+                placeholder="Your email address" 
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
+                required
+              />
+              <Button 
+                className="bg-gold text-navy hover:bg-gold-dark disabled:bg-opacity-70"
+                disabled={isLoading}
+                type="submit"
+              >
+                {isLoading ? 'Subscribing...' : 'Subscribe'}
+              </Button>
+            </form>
+          </div>
+        </div>
+      </section>
       
       {/* Map Section */}
       <section className="py-12 bg-gray-50">

@@ -1,3 +1,4 @@
+
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 interface LoginResponse {
@@ -19,6 +20,11 @@ interface SocialMediaData {
 interface SocialMediaResponse {
   status: string;
   data: SocialMediaData;
+}
+
+interface NewsletterSubscribeResponse {
+  status: string;
+  message: string;
 }
 
 export const apiSlice = createApi({
@@ -51,6 +57,13 @@ export const apiSlice = createApi({
         body: data,
       }),
     }),
+    subscribeNewsletter: builder.mutation<NewsletterSubscribeResponse, { email: string }>({
+      query: (data) => ({
+        url: '/newsletter/subscribe',
+        method: 'POST',
+        body: data,
+      }),
+    }),
   }),
 });
 
@@ -58,4 +71,5 @@ export const {
   useLoginMutation,
   useGetSocialMediaQuery,
   useUpdateSocialMediaMutation,
+  useSubscribeNewsletterMutation,
 } = apiSlice;
