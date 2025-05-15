@@ -1,6 +1,7 @@
 
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
+// Simple interfaces to avoid complex type inference issues
 interface LoginResponse {
   token: string;
 }
@@ -22,11 +23,12 @@ interface SocialMediaResponse {
   data: SocialMediaData;
 }
 
-interface NewsletterSubscribeResponse {
+interface NewsletterResponse {
   status: string;
   message: string;
 }
 
+// Create the API slice with endpoints
 export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({ 
@@ -40,6 +42,7 @@ export const apiSlice = createApi({
     },
   }),
   endpoints: (builder) => ({
+    // Login endpoint
     login: builder.mutation<LoginResponse, { email: string; password: string }>({
       query: (credentials) => ({
         url: '/admin/login',
@@ -47,6 +50,8 @@ export const apiSlice = createApi({
         body: credentials,
       }),
     }),
+    
+    // Social media endpoints
     getSocialMedia: builder.query<SocialMediaResponse, void>({
       query: () => '/admin/social-media',
     }),
@@ -57,7 +62,9 @@ export const apiSlice = createApi({
         body: data,
       }),
     }),
-    subscribeNewsletter: builder.mutation<NewsletterSubscribeResponse, { email: string }>({
+    
+    // Newsletter subscription endpoint
+    subscribeNewsletter: builder.mutation<NewsletterResponse, { email: string }>({
       query: (data) => ({
         url: '/newsletter/subscribe',
         method: 'POST',
@@ -67,6 +74,7 @@ export const apiSlice = createApi({
   }),
 });
 
+// Export hooks for usage in functional components
 export const { 
   useLoginMutation,
   useGetSocialMediaQuery,
