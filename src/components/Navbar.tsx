@@ -52,7 +52,7 @@ const Navbar = () => {
           <Link to="/contact" className={`font-montserrat font-medium text-navy hover:text-navy-light transition ${isActive("/contact")}`}>Contact</Link>
           <Button 
             className="bg-navy hover:bg-navy-light text-white ml-2" 
-            onClick={() => window.location.href = '/book'}
+            onClick={() => window.location.href = '/books'}
           >
             Buy Book
           </Button>
