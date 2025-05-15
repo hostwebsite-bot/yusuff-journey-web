@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -298,7 +297,7 @@ const BookDetail = () => {
             <div className="max-w-4xl mx-auto">
               <p className="text-lg text-gray-700 mb-6 leading-relaxed">
                 <span className="text-2xl font-semibold text-navy">{book.title}</span> 
-                {book.id === 'jbgs' ? ' is more than just another academic guide. It's a comprehensive roadmap that bridges the gap between academic excellence and real-world success.' : ' provides readers with practical insights and actionable strategies based on years of research and real-world experience.'}
+                {book.id === 'jbgs' ? ' is more than just another academic guide. It\'s a comprehensive roadmap that bridges the gap between academic excellence and real-world success.' : ' provides readers with practical insights and actionable strategies based on years of research and real-world experience.'}
               </p>
               <p className="text-lg text-gray-700 mb-6 leading-relaxed">
                 Drawing from Dr. Awosanya Yusuff's extensive experience in finance, education, and 
