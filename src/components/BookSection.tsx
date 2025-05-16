@@ -6,10 +6,10 @@ import { Link } from 'react-router-dom';
 const BookSection = () => {
   return (
     <section className="py-20 bg-gray-50">
-      <div className="container mx-auto">
+      <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="font-montserrat font-bold text-navy mb-6">
-            <span className="gold-underline">My Book</span>
+            <span className="gold-underline">Featured Book</span>
           </h2>
           <h3 className="text-3xl font-montserrat font-bold mb-4 text-navy">
             The Journey to Becoming a Great Student
@@ -20,9 +20,10 @@ const BookSection = () => {
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          <div className="flex justify-center">
-            {/* Placeholder for book cover - replace with actual book cover image when available */}
-            <div className="relative w-64 h-80 md:w-72 md:h-96 bg-navy rounded-lg shadow-xl transform rotate-3 flex items-center justify-center">
+          <div className="flex justify-center lg:order-2">
+            {/* Book cover with improved styling */}
+            <div className="relative w-64 h-80 md:w-72 md:h-96">
+              <div className="absolute inset-0 bg-navy rounded-lg shadow-xl transform rotate-3"></div>
               <div className="absolute inset-0 bg-gradient-to-r from-navy to-navy-light transform -rotate-3 rounded-lg flex items-center justify-center text-white">
                 <div className="text-center p-6">
                   <h4 className="font-montserrat font-bold text-xl mb-2">The Journey to Becoming a Great Student</h4>
@@ -33,7 +34,7 @@ const BookSection = () => {
             </div>
           </div>
           
-          <div className="flex flex-col">
+          <div className="flex flex-col lg:order-1">
             <h4 className="text-2xl font-montserrat font-bold mb-4 text-navy">What You'll Learn</h4>
             
             <ul className="space-y-4 mb-8">
@@ -75,15 +76,12 @@ const BookSection = () => {
               </li>
             </ul>
             
-            <div className="mt-auto flex flex-col sm:flex-row gap-4">
-              <Link to="/book">
-                <Button className="bg-navy hover:bg-navy-light text-white font-montserrat w-full sm:w-auto">
+            <div className="mt-auto">
+              <Link to="/books">
+                <Button className="bg-navy hover:bg-navy-light text-white font-montserrat">
                   Learn More
                 </Button>
               </Link>
-              <Button className="bg-gold hover:bg-gold-dark text-navy font-montserrat w-full sm:w-auto">
-                Buy Now
-              </Button>
             </div>
           </div>
         </div>
