@@ -6,7 +6,6 @@ import AboutSection from '@/components/AboutSection';
 import BookSection from '@/components/BookSection';
 import TestimonialSection from '@/components/TestimonialSection';
 import BlogPreview from '@/components/BlogPreview';
-import ContactSection from '@/components/ContactSection';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { useSubscribeNewsletterMutation } from '@/services/api/apiSlice';
@@ -156,7 +155,6 @@ const Index = () => {
         </div>
       </section>
       
-      <ContactSection />
       
       <Footer />
     </div>

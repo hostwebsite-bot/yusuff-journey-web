@@ -31,7 +31,7 @@ const ContactSection = () => {
       <div className="container mx-auto">
         <div className="text-center mb-12">
           <h2 className="font-montserrat font-bold text-navy mb-6">
-            <span className="gold-underline">Get In Touch</span>
+            <span className="gold-underline">Get In Touchs</span>
           </h2>
           <motion.h3 
             initial={{ opacity: 0 }}

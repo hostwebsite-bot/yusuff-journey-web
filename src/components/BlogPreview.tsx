@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { BlogPost } from '@/services/api/apiSlice';
+import { useGetPublicBlogsQuery } from '@/services/api/apiSlice';
 
 interface BlogPostCardProps {
   title: string;
@@ -66,42 +65,16 @@ const BlogPostCard: React.FC<BlogPostCardProps> = ({
 };
 
 const BlogPreview = () => {
-  // Blog post data matching the admin structure
-  const blogPosts = [
-    {
-      title: "The Impact of Financial Literacy on Academic Success",
-      excerpt: "Exploring the often-overlooked connection between understanding personal finance and achieving academic excellence.",
-      date: "May 10, 2025",
-      category: "finance",
-      slug: "financial-habits-students",
-      readTime: "8 min read",
-      image: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-      formattedContent: [
-        { type: 'heading', content: '1. Create and Stick to a Budget' },
-        { type: 'paragraph', content: 'A budget is your financial roadmap. Start by tracking all income sources, including allowances, part-time jobs, scholarships, or loans.' },
-        { type: 'heading', content: '2. Build an Emergency Fund' },
-        { type: 'paragraph', content: 'Life is unpredictable. An unexpected medical expense, laptop repair, or car breakdown can derail your financial stability.' }
-      ]
-    },
-    {
-      title: "5 Study Techniques That Actually Work, According to Science",
-      excerpt: "Evidence-based approaches to studying that can dramatically improve retention and understanding of complex material.",
-      date: "May 3, 2025",
-      category: "education",
-      slug: "passion-purpose-education",
-      readTime: "6 min read",
-      image: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"
-    },
-    {
-      title: "Building Your First Business While Still in School",
-      excerpt: "A practical guide for students looking to develop entrepreneurial skills and launch their first venture before graduation.",
-      date: "April 25, 2025",
-      category: "entrepreneurship",
-      slug: "entrepreneurial-mindset-students",
-      readTime: "10 min read",
-      image: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"
-    }
-  ];
+  const { data: blogsData, isLoading } = useGetPublicBlogsQuery({ page: 1, limit: 3 });
+  
+  // Flatten and sort blogs by date
+  const recentBlogs = React.useMemo(() => {
+    if (!blogsData?.data) return [];
+    return blogsData.data
+      .flatMap(category => category.blogs)
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, 3);
+  }, [blogsData]);
 
   return (
     <section className="py-20 bg-gray-50">
@@ -119,18 +92,28 @@ const BlogPreview = () => {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-10">
-          {blogPosts.map((post, index) => (
-            <BlogPostCard 
-              key={index} 
-              title={post.title} 
-              excerpt={post.excerpt} 
-              date={post.date} 
-              category={post.category} 
-              slug={post.slug} 
-              imageUrl={post.image} 
-              readTime={post.readTime} 
-            />
-          ))}
+          {isLoading ? (
+            <div className="col-span-3 text-center py-12">Loading articles...</div>
+          ) : recentBlogs.length === 0 ? (
+            <div className="col-span-3 text-center py-12">No articles found</div>
+          ) : (
+            recentBlogs.map((post) => (
+              <BlogPostCard 
+                key={post.id}
+                title={post.title}
+                excerpt={post.excerpt}
+                date={new Date(post.date).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+                category={post.category}
+                slug={post.id}
+                imageUrl={post.image}
+                readTime={post.readTime}
+              />
+            ))
+          )}
         </div>
         
         <div className="text-center">
