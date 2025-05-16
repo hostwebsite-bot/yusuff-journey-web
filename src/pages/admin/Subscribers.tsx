@@ -1,30 +1,33 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from '@/components/ui/sonner';
-import { Download, Send, Search, Mail, Trash2 } from "lucide-react";
+import { Download, Send, Search, Mail, Trash2, ToggleLeft } from "lucide-react";
+import { useGetSubscribersQuery, useToggleSubscriberStatusMutation } from '@/services/api/apiSlice';
 
 const Subscribers = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   
-  // Mock subscribers data
-  const [subscribers, setSubscribers] = useState([
-    { id: 1, email: "john.doe@example.com", date: "2023-05-10", status: "active" },
-    { id: 2, email: "jane.smith@example.com", date: "2023-05-09", status: "active" },
-    { id: 3, email: "robert.johnson@example.com", date: "2023-05-09", status: "active" },
-    { id: 4, email: "lisa.brown@example.com", date: "2023-05-08", status: "inactive" },
-    { id: 5, email: "michael.davis@example.com", date: "2023-05-07", status: "active" },
-    { id: 6, email: "sarah.wilson@example.com", date: "2023-05-06", status: "active" },
-    { id: 7, email: "david.miller@example.com", date: "2023-05-05", status: "inactive" },
-    { id: 8, email: "emma.jones@example.com", date: "2023-05-04", status: "active" },
-    { id: 9, email: "james.taylor@example.com", date: "2023-05-03", status: "active" },
-    { id: 10, email: "sophia.anderson@example.com", date: "2023-05-02", status: "active" },
-  ]);
+  const { data: subscribersData, isLoading, refetch } = useGetSubscribersQuery();
+  const [toggleStatus] = useToggleSubscriberStatusMutation();
 
-  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const handleToggleStatus = async (id: string) => {
+    try {
+      await toggleStatus(id).unwrap();
+      toast.success("Subscriber status updated successfully");
+      refetch(); // Refresh the subscribers list
+    } catch (error) {
+      toast.error("Failed to update subscriber status");
+    }
+  };
+
+  const filteredSubscribers = subscribersData?.data.filter(sub => 
+    sub.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    sub.dateSubscribed.includes(searchTerm)
+  ) ?? [];
 
   const handleSelectAll = () => {
     if (selectedIds.length === filteredSubscribers.length) {
@@ -59,14 +62,6 @@ const Subscribers = () => {
     // In a real app, this would navigate to the newsletter creation page
     window.location.href = '/admin/newsletter';
   };
-
-  // Filter subscribers based on search term
-  const filteredSubscribers = searchTerm
-    ? subscribers.filter(sub => 
-        sub.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        sub.date.includes(searchTerm)
-      )
-    : subscribers;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -115,7 +110,13 @@ const Subscribers = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredSubscribers.length === 0 ? (
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center py-6">
+                  Loading subscribers...
+                </TableCell>
+              </TableRow>
+            ) : filteredSubscribers.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="text-center py-6 text-gray-500">
                   No subscribers found
@@ -134,7 +135,7 @@ const Subscribers = () => {
                     <Mail size={16} className="mr-2 text-gray-400" />
                     {subscriber.email}
                   </TableCell>
-                  <TableCell>{subscriber.date}</TableCell>
+                  <TableCell>{subscriber.dateSubscribed}</TableCell>
                   <TableCell>
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                       subscriber.status === 'active' 
@@ -145,8 +146,13 @@ const Subscribers = () => {
                     </span>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="sm" onClick={() => handleDelete([subscriber.id])}>
-                      <Trash2 size={16} />
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => handleToggleStatus(subscriber.id)}
+                      className="mr-2"
+                    >
+                      <ToggleLeft size={16} />
                     </Button>
                   </TableCell>
                 </TableRow>

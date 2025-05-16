@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from '@/components/ui/sonner';
 import { Plus, Edit, Trash2 } from "lucide-react";
+import { useGetAdminBooksQuery, useCreateBookMutation } from '@/services/api/apiSlice';
 
 // Book interface to match with the public pages
 interface Book {
@@ -21,56 +21,21 @@ interface Book {
   image: string;
   featured?: boolean;
   categories?: string[];
+  isbn?: string;
+  pages?: number;
+  rating?: number;
+  globalReaders?: string;
+  publicationYear?: string;
+  amazonLink?: string;
 }
 
 const Books = () => {
+  const { data: booksData, isLoading } = useGetAdminBooksQuery();
+  const [createBook, { isLoading: isCreating }] = useCreateBookMutation();
   const [open, setOpen] = useState(false);
   const [editingBook, setEditingBook] = useState<Book | null>(null);
   
-  // Mock book data aligned with public book pages
-  const [books, setBooks] = useState<Book[]>([
-    {
-      id: "jbgs",
-      title: "The Journey to Becoming a Great Student",
-      shortTitle: "#JBGS",
-      subtitle: "A Journey to Excellence",
-      author: "Dr. Awosanya Yusuff",
-      description: "A comprehensive roadmap that bridges the gap between academic excellence and real-world success.",
-      price: 24.99,
-      published: "2022-06-15",
-      image: "/lovable-uploads/ac1830de-9ab7-4ac8-b7e3-93b41071cb14.png",
-      featured: true,
-      categories: ["Academic Excellence", "Financial Literacy", "Personal Development"]
-    },
-    {
-      id: "vacua",
-      title: "Vacua",
-      shortTitle: "Vacua",
-      subtitle: "The Power of Empty Spaces",
-      author: "Dr. Awosanya Yusuff",
-      description: "An exploration of how embracing emptiness can lead to profound personal growth and creativity.",
-      price: 24.99,
-      published: "2023-03-22",
-      image: "/placeholder.svg",
-      featured: false,
-      categories: ["Personal Development", "Philosophy"]
-    },
-    {
-      id: "financial-wisdom",
-      title: "Financial Wisdom for Young Professionals",
-      shortTitle: "Financial Wisdom",
-      subtitle: "Essential Money Management",
-      author: "Dr. Awosanya Yusuff",
-      description: "Essential financial knowledge for young adults entering the professional world.",
-      price: 22.99,
-      published: "2024-01-15",
-      image: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-      featured: false,
-      categories: ["Finance", "Career Development", "Investing"]
-    }
-  ]);
-
-  const [formData, setFormData] = useState<Book>({
+  const [formData, setFormData] = useState<any>({
     id: "",
     title: "",
     shortTitle: "",
@@ -81,7 +46,13 @@ const Books = () => {
     published: "",
     image: "",
     featured: false,
-    categories: []
+    categories: [],
+    isbn: "",
+    pages: 0,
+    rating: 0,
+    globalReaders: "",
+    publicationYear: new Date().getFullYear().toString(),
+    amazonLink: "",
   });
 
   const [categoryInput, setCategoryInput] = useState("");
@@ -92,7 +63,6 @@ const Books = () => {
       setEditingBook(book);
     } else {
       setFormData({
-        id: "",
         title: "",
         shortTitle: "",
         subtitle: "",
@@ -102,7 +72,13 @@ const Books = () => {
         published: "",
         image: "",
         featured: false,
-        categories: []
+        categories: [],
+        isbn: "",
+        pages: 0,
+        rating: 0,
+        globalReaders: "",
+        publicationYear: new Date().getFullYear().toString(),
+        amazonLink: "",
       });
       setEditingBook(null);
     }
@@ -137,34 +113,59 @@ const Books = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Generate shortTitle if not provided
-    if (!formData.shortTitle && formData.title) {
-      formData.shortTitle = formData.title.split(' ').slice(0, 2).join(' ');
-    }
-
-    if (editingBook) {
-      // Update existing book
-      setBooks(books.map(book => book.id === editingBook.id ? formData : book));
-      toast.success(`Book "${formData.title}" has been updated`);
-    } else {
-      // Add new book with generated ID
-      const newBook = {
-        ...formData,
-        id: formData.id || formData.title.toLowerCase().replace(/\s+/g, "-"),
-      };
-      setBooks([...books, newBook]);
-      toast.success(`Book "${formData.title}" has been added`);
+    // Create FormData object
+    const submitFormData = new FormData();
+    
+    // Add all text fields
+    Object.keys(formData).forEach(key => {
+      if (key !== 'image' && formData[key] !== undefined) {
+        if (key === 'categories') {
+          submitFormData.append(key, JSON.stringify(formData[key]));
+        } else {
+          submitFormData.append(key, formData[key].toString());
+        }
+      }
+    });
+    
+    // Handle image file if it's a File object
+    if (formData.image instanceof File) {
+      submitFormData.append('image', formData.image);
     }
     
-    setOpen(false);
+    try {
+      if (editingBook) {
+        // Update existing book
+        // setBooks(books.map(book => book.id === editingBook.id ? formData : book));
+        toast.success(`Book "${formData.title}" has been updated`);
+      } else {
+        // Create new book
+        const response = await createBook(submitFormData).unwrap();
+        toast.success(`Book "${response.data.title}" has been added`);
+      }
+      setOpen(false);
+    } catch (error: any) {
+      console.log(error)
+      toast.error(error.data?.message || 'Something went wrong');
+    }
+  };
+
+  // Update image handling
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFormData(prev => ({
+        ...prev,
+        image: file
+      }));
+    }
   };
 
   const handleDelete = (id: string) => {
     if (confirm("Are you sure you want to delete this book?")) {
-      setBooks(books.filter(book => book.id !== id));
+      // setBooks(books.filter(book => book.id !== id));
       toast.success("Book has been deleted");
     }
   };
@@ -193,41 +194,64 @@ const Books = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {books.map((book) => (
-              <TableRow key={book.id}>
-                <TableCell className="font-medium">
-                  <Checkbox />
-                </TableCell>
-                <TableCell className="font-medium">{book.title}</TableCell>
-                <TableCell>{book.author}</TableCell>
-                <TableCell>${book.price.toFixed(2)}</TableCell>
-                <TableCell>{book.published}</TableCell>
-                <TableCell>{book.featured ? "Yes" : "No"}</TableCell>
-                <TableCell className="text-right">
-                  <Button variant="ghost" size="sm" onClick={() => handleOpenDialog(book)}>
-                    <Edit size={16} />
-                  </Button>
-                  <Button variant="ghost" size="sm" onClick={() => handleDelete(book.id)}>
-                    <Trash2 size={16} />
-                  </Button>
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center py-8">
+                  Loading books...
                 </TableCell>
               </TableRow>
-            ))}
+            ) : booksData?.data.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center py-8">
+                  No books found
+                </TableCell>
+              </TableRow>
+            ) : (
+              booksData?.data.map((book) => (
+                <TableRow key={book._id}>
+                  <TableCell className="font-medium">
+                    <Checkbox />
+                  </TableCell>
+                  <TableCell className="font-medium">{book.title}</TableCell>
+                  <TableCell>{book.author}</TableCell>
+                  <TableCell>${book.price.toFixed(2)}</TableCell>
+                  <TableCell>{new Date(book.published).toLocaleDateString()}</TableCell>
+                  <TableCell>{book.featured ? "Yes" : "No"}</TableCell>
+                  <TableCell className="text-right">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => handleOpenDialog(book)}
+                    >
+                      <Edit size={16} />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => handleDelete(book._id)}
+                      disabled={isLoading}
+                    >
+                      <Trash2 size={16} />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-[700px]">
+        <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingBook ? "Edit Book" : "Add New Book"}</DialogTitle>
             <DialogDescription>
               {editingBook ? "Update the details of this book" : "Fill in the details for the new book"}
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label htmlFor="title" className="text-sm font-medium">Title</label>
                   <Input
@@ -249,7 +273,7 @@ const Books = () => {
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label htmlFor="subtitle" className="text-sm font-medium">Subtitle</label>
                   <Input
@@ -271,7 +295,7 @@ const Books = () => {
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <label htmlFor="price" className="text-sm font-medium">Price ($)</label>
                   <Input
@@ -307,34 +331,97 @@ const Books = () => {
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label htmlFor="image" className="text-sm font-medium">Image URL</label>
+                  <label htmlFor="amazonLink" className="text-sm font-medium">Amazon Link</label>
+                  <Input
+                    id="amazonLink"
+                    name="amazonLink"
+                    value={formData.amazonLink}
+                    onChange={handleChange}
+                    placeholder="https://amazon.com/your-book"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="image" className="text-sm font-medium">Book Cover</label>
                   <Input
                     id="image"
                     name="image"
-                    value={formData.image}
-                    onChange={handleChange}
-                    placeholder="/images/book-cover.jpg"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="flex-1"
                   />
-                </div>
-                <div className="space-y-2 flex items-end">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="featured" 
-                      name="featured"
-                      checked={formData.featured || false}
-                      onCheckedChange={(checked) => {
-                        setFormData(prev => ({
-                          ...prev,
-                          featured: checked === true
-                        }));
-                      }}
-                    />
-                    <label htmlFor="featured" className="text-sm font-medium">Featured Book</label>
-                  </div>
+                  {formData.image && (
+                    <div className="mt-2">
+                      <img 
+                        src={formData.image instanceof File ? URL.createObjectURL(formData.image) : formData.image} 
+                        alt="Preview" 
+                        className="w-32 h-32 object-cover rounded"
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label htmlFor="isbn" className="text-sm font-medium">ISBN</label>
+                  <Input
+                    id="isbn"
+                    name="isbn"
+                    value={formData.isbn}
+                    onChange={handleChange}
+                    placeholder="978-0987654321"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="pages" className="text-sm font-medium">Number of Pages</label>
+                  <Input
+                    id="pages"
+                    name="pages"
+                    type="number"
+                    value={formData.pages}
+                    onChange={handleChange}
+                    min="1"
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <label htmlFor="rating" className="text-sm font-medium">Rating</label>
+                  <Input
+                    id="rating"
+                    name="rating"
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="5"
+                    value={formData.rating}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="globalReaders" className="text-sm font-medium">Global Readers</label>
+                  <Input
+                    id="globalReaders"
+                    name="globalReaders"
+                    value={formData.globalReaders}
+                    onChange={handleChange}
+                    placeholder="Global readers"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="publicationYear" className="text-sm font-medium">Publication Year</label>
+                  <Input
+                    id="publicationYear"
+                    name="publicationYear"
+                    value={formData.publicationYear}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <label htmlFor="description" className="text-sm font-medium">Description</label>
                 <Input
@@ -378,7 +465,8 @@ const Books = () => {
                 </div>
               </div>
             </div>
-            <DialogFooter>
+            
+            <DialogFooter className="sticky bottom-0 bg-white pt-2 pb-4">
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                 Cancel
               </Button>

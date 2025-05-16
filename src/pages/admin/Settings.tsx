@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from '@/components/ui/sonner';
 import { Settings as SettingsIcon, Save, Shield } from "lucide-react";
-import { useGetSocialMediaQuery, useUpdateSocialMediaMutation } from '@/services/api/apiSlice';
+import { useGetSocialMediaQuery, useUpdateSocialMediaMutation, useChangePasswordMutation } from '@/services/api/apiSlice';
 
 const Settings = () => {
   const [generalSettings, setGeneralSettings] = useState({
@@ -59,6 +59,7 @@ const Settings = () => {
 
   const { data: socialMediaData, isLoading: isSocialMediaLoading } = useGetSocialMediaQuery();
   const [updateSocialMedia, { isLoading: isUpdatingSocialMedia }] = useUpdateSocialMediaMutation();
+  const [changePassword, { isLoading: isChangingPassword }] = useChangePasswordMutation();
 
   useEffect(() => {
     if (socialMediaData) {
@@ -86,20 +87,30 @@ const Settings = () => {
     }
   };
 
-  const saveSecuritySettings = (e: React.FormEvent) => {
+  const saveSecuritySettings = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (securitySettings.newPassword !== securitySettings.confirmPassword) {
       toast.error("New passwords do not match");
       return;
     }
-    
-    toast.success("Password changed successfully");
-    setSecuritySettings({
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: ""
-    });
+
+    try {
+      await changePassword({
+        currentPassword: securitySettings.currentPassword,
+        newPassword: securitySettings.newPassword,
+        confirmNewPassword: securitySettings.confirmPassword,
+      }).unwrap();
+      
+      toast.success("Password changed successfully");
+      setSecuritySettings({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: ""
+      });
+    } catch (error: any) {
+      toast.error(error.data?.message || "Failed to change password");
+    }
   };
 
   return (
@@ -295,9 +306,13 @@ const Settings = () => {
                   />
                 </div>
                 
-                <Button type="submit" className="mt-4">
+                <Button 
+                  type="submit" 
+                  className="mt-4"
+                  disabled={isChangingPassword}
+                >
                   <Save size={18} className="mr-2" />
-                  Change Password
+                  {isChangingPassword ? "Changing Password..." : "Change Password"}
                 </Button>
               </form>
             </CardContent>

@@ -6,7 +6,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from '@/components/ui/sonner';
 import { Plus, Edit, Trash2, ListOrdered, Hash, CheckSquare } from "lucide-react";
-import { BlogPost } from '@/services/api/apiSlice';
+import { 
+  BlogPost, 
+  useGetAdminBlogsQuery, 
+  useCreateBlogMutation, 
+  useUpdateBlogMutation,
+  useDeleteBlogPostMutation 
+} from '@/services/api/apiSlice';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription } from '@/components/ui/form';
@@ -21,6 +27,11 @@ interface ContentBlock {
 }
 
 const Blogs = () => {
+  const { data: blogsData, isLoading } = useGetAdminBlogsQuery();
+  const [createBlog, { isLoading: isCreating }] = useCreateBlogMutation();
+  const [updateBlog, { isLoading: isUpdating }] = useUpdateBlogMutation();
+  const [deleteBlog, { isLoading: isDeleting }] = useDeleteBlogPostMutation();
+
   const [open, setOpen] = useState(false);
   const [editingBlog, setEditingBlog] = useState<BlogPost | null>(null);
   const [activeTab, setActiveTab] = useState('basic');
@@ -60,7 +71,7 @@ const Blogs = () => {
     }
   ]);
 
-  const [formData, setFormData] = useState<BlogPost>({
+  const [formData, setFormData] = useState<any>({
     id: "",
     title: "",
     author: "",
@@ -159,40 +170,66 @@ const Blogs = () => {
     setContentBlocks(newBlocks);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Combine content blocks into one string for compatibility with existing structure
-    const combinedContent = contentBlocks.map(block => block.content).join('\n\n');
+    // Create FormData object
+    const submitFormData = new FormData();
     
-    const blogWithContent = {
-      ...formData,
-      content: combinedContent,
-      formattedContent: contentBlocks.map(({ id, ...rest }) => rest)
-    };
+    // Add basic fields
+    submitFormData.append('title', formData.title);
+    submitFormData.append('author', formData.author);
+    submitFormData.append('excerpt', formData.excerpt);
+    submitFormData.append('category', formData.category);
+    submitFormData.append('date', formData.date);
+    submitFormData.append('readTime', formData.readTime);
     
-    if (editingBlog) {
-      // Update existing blog
-      setBlogs(blogs.map(blog => blog.id === editingBlog.id ? blogWithContent : blog));
-      toast.success(`Blog post "${formData.title}" has been updated`);
-    } else {
-      // Add new blog with generated ID
-      const newBlog = {
-        ...blogWithContent,
-        id: formData.id || formData.title.toLowerCase().replace(/\s+/g, "-"),
-        date: formData.date || new Date().toISOString().split('T')[0]
-      };
-      setBlogs([...blogs, newBlog]);
-      toast.success(`Blog post "${formData.title}" has been added`);
+    // Handle image file
+    if (formData.image instanceof File) {
+      submitFormData.append('image', formData.image);
+    } else if (typeof formData.image === 'string' && !formData.image.startsWith('http')) {
+      // If it's a base64 string from preview
+      const response = await fetch(formData.image);
+      const blob = await response.blob();
+      submitFormData.append('image', blob, 'image.jpg');
     }
     
-    setOpen(false);
+    // Add formatted content
+    const combinedContent = contentBlocks.map(block => block.content).join('\n\n');
+    submitFormData.append('content', combinedContent);
+    submitFormData.append('formattedContent', JSON.stringify(
+      contentBlocks.map(({ id, ...rest }) => rest)
+    ));
+    
+    try {
+      if (editingBlog) {
+        await updateBlog({
+          id: editingBlog.id,
+          formData: submitFormData
+        }).unwrap();
+        toast.success(`Blog post "${formData.title}" has been updated`);
+      } else {
+     const response =   await createBlog(submitFormData).unwrap();
+     console.log(response)
+        toast.success(`Blog post "${formData.title}" has been added`);
+      }
+      setOpen(false);
+    } catch (error: any) {
+      console.log(error)
+      toast.error(error.data?.message || 'Something went wrong');
+    }
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to delete this blog post?")) {
-      setBlogs(blogs.filter(blog => blog.id !== id));
-      toast.success("Blog post has been deleted");
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Create preview URL for immediate display
+      const previewUrl = URL.createObjectURL(file);
+      setFormData(prev => ({
+        ...prev,
+        image: file,
+        imagePreview: previewUrl // Add preview URL
+      }));
     }
   };
 
@@ -242,6 +279,17 @@ const Blogs = () => {
     );
   };
 
+  const handleDelete = async (id: string) => {
+    if (confirm("Are you sure you want to delete this blog post?")) {
+      try {
+        await deleteBlog(id).unwrap();
+        toast.success("Blog post has been deleted");
+      } catch (error: any) {
+        toast.error(error.data?.message || 'Failed to delete blog post');
+      }
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
@@ -265,27 +313,40 @@ const Blogs = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {blogs.map((blog) => (
-              <TableRow key={blog.id}>
-                <TableCell className="font-medium">
-                  <Checkbox />
-                </TableCell>
-                <TableCell className="font-medium">{blog.title}</TableCell>
-                <TableCell>
-                  {categoryOptions.find(cat => cat.id === blog.category)?.name || blog.category}
-                </TableCell>
-                <TableCell>{blog.date}</TableCell>
-                <TableCell>{blog.readTime}</TableCell>
-                <TableCell className="text-right">
-                  <Button variant="ghost" size="sm" onClick={() => handleOpenDialog(blog)}>
-                    <Edit size={16} />
-                  </Button>
-                  <Button variant="ghost" size="sm" onClick={() => handleDelete(blog.id)}>
-                    <Trash2 size={16} />
-                  </Button>
-                </TableCell>
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center">Loading...</TableCell>
               </TableRow>
-            ))}
+            ) : blogsData?.data.flatMap(category => 
+              category.blogs.map((blog) => (
+                <TableRow key={blog.id}>
+                  <TableCell className="font-medium">
+                    <Checkbox />
+                  </TableCell>
+                  <TableCell className="font-medium">{blog.title}</TableCell>
+                  <TableCell>{blog.category}</TableCell>
+                  <TableCell>{new Date(blog.date).toLocaleDateString()}</TableCell>
+                  <TableCell>{blog.readTime}</TableCell>
+                  <TableCell className="text-right space-x-2">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => handleOpenDialog(blog)}
+                    >
+                      <Edit size={16} />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => handleDelete(blog.id)}
+                      disabled={isDeleting}
+                    >
+                      <Trash2 size={16} />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>
@@ -386,14 +447,26 @@ const Blogs = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <label htmlFor="image" className="text-sm font-medium">Featured Image URL</label>
-                    <Input
-                      id="image"
-                      name="image"
-                      value={formData.image}
-                      onChange={handleChange}
-                      placeholder="/images/blog-image.jpg"
-                    />
+                    <label htmlFor="image" className="text-sm font-medium">Featured Image</label>
+                    <div className="flex gap-4 items-center">
+                      <Input
+                        id="image"
+                        name="image"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="flex-1"
+                      />
+                      {(formData.imagePreview || (typeof formData.image === 'string' && formData.image)) && (
+                        <div className="w-20 h-20 relative">
+                          <img 
+                            src={formData.imagePreview || formData.image} 
+                            alt="Preview" 
+                            className="w-full h-full object-cover rounded"
+                          />
+                        </div>
+                      )}
+                    </div>
                   </div>
                   
                   <div className="space-y-2">

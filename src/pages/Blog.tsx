@@ -6,13 +6,21 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Link } from 'react-router-dom';
-import { useSubscribeNewsletterMutation } from '@/services/api/apiSlice';
+import { useGetPublicBlogsQuery, useSubscribeNewsletterMutation } from '@/services/api/apiSlice';
 import { toast } from 'sonner';
+import { formatDate } from '@/utils/formatDate';
 
 const Blog = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [newsletterEmail, setNewsletterEmail] = useState('');
-  const [subscribeNewsletter, { isLoading }] = useSubscribeNewsletterMutation();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [activeCategory, setActiveCategory] = useState('all');
+  const { data: blogsData, isLoading } = useGetPublicBlogsQuery({
+    page: currentPage,
+    limit: 10,
+    category: activeCategory,
+  });
+  const [subscribeNewsletter, { isLoading: isSubscribing }] = useSubscribeNewsletterMutation();
   
   const categories = [
     { id: 'all', name: 'All Articles' },
@@ -22,68 +30,18 @@ const Blog = () => {
     { id: 'personal', name: 'Personal Development' }
   ];
   
-  const blogPosts = [
-    {
-      id: 'financial-habits-students',
-      title: 'The Impact of Financial Literacy on Academic Success',
-      excerpt: 'Exploring the often-overlooked connection between understanding personal finance and achieving academic excellence.',
-      category: 'finance',
-      date: 'May 10, 2025',
-      readTime: '8 min read',
-      image: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3'
-    },
-    {
-      id: 'passion-purpose-education',
-      title: '5 Study Techniques That Actually Work, According to Science',
-      excerpt: 'Evidence-based approaches to studying that can dramatically improve retention and understanding of complex material.',
-      category: 'education',
-      date: 'May 3, 2025',
-      readTime: '6 min read',
-      image: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3'
-    },
-    {
-      id: 'entrepreneurial-mindset-students',
-      title: 'Building Your First Business While Still in School',
-      excerpt: 'A practical guide for students looking to develop entrepreneurial skills and launch their first venture before graduation.',
-      category: 'entrepreneurship',
-      date: 'April 25, 2025',
-      readTime: '10 min read',
-      image: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3'
-    },
-    {
-      id: '4',
-      title: 'The Psychology of Resilience in Academic Settings',
-      excerpt: 'Understanding how to develop mental toughness and bounce back from setbacks in your educational journey.',
-      category: 'personal',
-      date: 'April 18, 2025',
-      readTime: '7 min read',
-      image: 'https://images.unsplash.com/photo-1526047932273-341f2a7631f9?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3'
-    },
-    {
-      id: '5',
-      title: 'Investing Basics for College Students',
-      excerpt: 'A beginner-friendly introduction to investing principles that every student should understand before graduation.',
-      category: 'finance',
-      date: 'April 12, 2025',
-      readTime: '9 min read',
-      image: 'https://images.unsplash.com/photo-1642543348571-02f86d1997a4?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3'
-    },
-    {
-      id: '6',
-      title: 'The Art of Effective Time Management for Students',
-      excerpt: 'Practical strategies for balancing academic responsibilities, personal life, and future career preparations.',
-      category: 'education',
-      date: 'April 5, 2025',
-      readTime: '5 min read',
-      image: 'https://images.unsplash.com/photo-1506784365847-bbad939e9335?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3'
-    }
-  ];
-  
-  // Filter posts based on search query
-  const filteredPosts = blogPosts.filter(post => 
-    post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    post.excerpt.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredPosts = blogsData?.data.flatMap(category => 
+    category.blogs.filter(post =>
+      post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      post.excerpt.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  ) || [];
+
+  // Function to handle category change
+  const handleCategoryChange = (category: string) => {
+    setActiveCategory(category);
+    setCurrentPage(1);
+  };
 
   // Function to handle search submission
   const handleSearch = (e: React.FormEvent) => {
@@ -142,7 +100,7 @@ const Blog = () => {
       {/* Blog Posts Section */}
       <section className="py-16 md:py-24 bg-white">
         <div className="container mx-auto px-4">
-          <Tabs defaultValue="all" className="w-full">
+          <Tabs defaultValue="all" className="w-full" onValueChange={handleCategoryChange}>
             <TabsList className="flex flex-wrap justify-center mb-12">
               {categories.map((category) => (
                 <TabsTrigger 
@@ -157,10 +115,11 @@ const Blog = () => {
             
             {categories.map((category) => (
               <TabsContent key={category.id} value={category.id} className="mt-0">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {filteredPosts
-                    .filter(post => category.id === 'all' || post.category === category.id)
-                    .map((post) => (
+                {isLoading ? (
+                  <div className="text-center py-12">Loading...</div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {filteredPosts.map((post) => (
                       <Card key={post.id} className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
                         <div className="h-48 overflow-hidden">
                           <img 
@@ -175,7 +134,7 @@ const Blog = () => {
                               {categories.find(cat => cat.id === post.category)?.name}
                             </span>
                             <span className="text-xs text-gray-500 ml-auto">
-                              {post.date} • {post.readTime}
+                              {formatDate(post.date)} • {post.readTime}
                             </span>
                           </div>
                           <h3 className="font-montserrat font-bold text-xl text-navy mb-3 hover:text-gold transition-colors">
@@ -193,12 +152,12 @@ const Blog = () => {
                           </Link>
                         </CardFooter>
                       </Card>
-                    ))
-                  }
-                </div>
+                    ))}
+                  </div>
+                )}
                 
                 {/* Empty state when no results found */}
-                {filteredPosts.filter(post => category.id === 'all' || post.category === category.id).length === 0 && (
+                {!isLoading && filteredPosts.length === 0 && (
                   <div className="text-center py-12">
                     <h3 className="font-montserrat font-bold text-xl text-navy mb-3">
                       No articles found
@@ -239,10 +198,10 @@ const Blog = () => {
               />
               <Button 
                 className="bg-gold text-navy hover:bg-gold-dark disabled:bg-opacity-70"
-                disabled={isLoading}
+                disabled={isSubscribing}
                 type="submit"
               >
-                {isLoading ? 'Subscribing...' : 'Subscribe'}
+                {isSubscribing ? 'Subscribing...' : 'Subscribe'}
               </Button>
             </form>
           </div>

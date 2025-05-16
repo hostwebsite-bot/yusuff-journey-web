@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,6 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from '@/components/ui/sonner';
 import { Send, Users } from "lucide-react";
+import { useGetNewsletterStatsQuery } from '@/services/api/apiSlice';
 
 const Newsletter = () => {
   const [formData, setFormData] = useState({
@@ -15,9 +15,7 @@ const Newsletter = () => {
     sendToAll: true,
   });
 
-  // Mock subscribers data
-  const subscriberCount = 1458;
-  const activeSubscriberCount = 1352;
+  const { data: stats, isLoading: isLoadingStats } = useGetNewsletterStatsQuery();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -38,7 +36,7 @@ const Newsletter = () => {
     e.preventDefault();
     
     // In a real app, this would send the newsletter
-    toast.success(`Newsletter "${formData.subject}" has been queued for delivery to ${formData.sendToAll ? subscriberCount : activeSubscriberCount} recipients`);
+    toast.success(`Newsletter "${formData.subject}" has been queued for delivery to ${formData.sendToAll ? stats?.data.totalSubscribers : stats?.data.activeSubscribers} recipients`);
     
     // Reset form
     setFormData({
@@ -145,31 +143,33 @@ const Newsletter = () => {
                     <Users size={20} className="mr-2 text-navy" />
                     <span className="text-sm">Total Subscribers</span>
                   </div>
-                  <span className="font-bold">{subscriberCount}</span>
+                  <span className="font-bold">{stats?.data.totalSubscribers ?? '-'}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <Users size={20} className="mr-2 text-green-600" />
                     <span className="text-sm">Active Subscribers</span>
                   </div>
-                  <span className="font-bold">{activeSubscriberCount}</span>
+                  <span className="font-bold">{stats?.data.activeSubscribers ?? '-'}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <Users size={20} className="mr-2 text-gray-400" />
                     <span className="text-sm">Inactive Subscribers</span>
                   </div>
-                  <span className="font-bold">{subscriberCount - activeSubscriberCount}</span>
+                  <span className="font-bold">{stats?.data.inactiveSubscribers ?? '-'}</span>
                 </div>
                 
                 <div className="h-1 w-full bg-gray-200 rounded overflow-hidden mt-4">
                   <div 
                     className="h-1 bg-green-500" 
-                    style={{ width: `${(activeSubscriberCount / subscriberCount) * 100}%` }}
+                    style={{ 
+                      width: stats?.data.activeRate ?? '0%'
+                    }}
                   ></div>
                 </div>
                 <div className="text-xs text-gray-500 text-right">
-                  {Math.round((activeSubscriberCount / subscriberCount) * 100)}% active rate
+                  {isLoadingStats ? 'Loading...' : `${stats?.data.activeRate ?? '0%'} active rate`}
                 </div>
               </div>
             </CardContent>
