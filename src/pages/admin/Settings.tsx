@@ -3,8 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from '@/components/ui/sonner';
-import { Settings as SettingsIcon, Save, Shield } from "lucide-react";
-import { useGetSocialMediaQuery, useUpdateSocialMediaMutation, useChangePasswordMutation } from '@/services/api/apiSlice';
+import { Settings as SettingsIcon, Save, Shield, Image, Upload } from "lucide-react";
+import { useGetSocialMediaQuery, useUpdateSocialMediaMutation, useChangePasswordMutation, useUpdateProfilePictureMutation } from '@/services/api/apiSlice';
 
 const Settings = () => {
   const [generalSettings, setGeneralSettings] = useState({
@@ -27,6 +27,25 @@ const Settings = () => {
     newPassword: "",
     confirmPassword: ""
   });
+
+  const [profilePicture, setProfilePicture] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>('');
+
+  const { data: socialMediaData, isLoading: isSocialMediaLoading } = useGetSocialMediaQuery();
+  const [updateSocialMedia, { isLoading: isUpdatingSocialMedia }] = useUpdateSocialMediaMutation();
+  const [changePassword, { isLoading: isChangingPassword }] = useChangePasswordMutation();
+  const [updateProfilePicture] = useUpdateProfilePictureMutation();
+
+  useEffect(() => {
+    if (socialMediaData) {
+      setSocialSettings({
+        facebook: socialMediaData.data.facebookUrl,
+        twitter: socialMediaData.data.twitterUrl,
+        instagram: socialMediaData.data.instagramUrl,
+        linkedin: socialMediaData.data.linkedinUrl,
+      });
+    }
+  }, [socialMediaData]);
 
   const handleGeneralChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -52,25 +71,18 @@ const Settings = () => {
     }));
   };
 
+  const handleProfilePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setProfilePicture(file);
+      setPreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
   const saveGeneralSettings = (e: React.FormEvent) => {
     e.preventDefault();
     toast.success("General settings saved successfully");
   };
-
-  const { data: socialMediaData, isLoading: isSocialMediaLoading } = useGetSocialMediaQuery();
-  const [updateSocialMedia, { isLoading: isUpdatingSocialMedia }] = useUpdateSocialMediaMutation();
-  const [changePassword, { isLoading: isChangingPassword }] = useChangePasswordMutation();
-
-  useEffect(() => {
-    if (socialMediaData) {
-      setSocialSettings({
-        facebook: socialMediaData.data.facebookUrl,
-        twitter: socialMediaData.data.twitterUrl,
-        instagram: socialMediaData.data.instagramUrl,
-        linkedin: socialMediaData.data.linkedinUrl,
-      });
-    }
-  }, [socialMediaData]);
 
   const saveSocialSettings = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,6 +125,21 @@ const Settings = () => {
     }
   };
 
+  const handleUpdateProfilePicture = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!profilePicture) return;
+
+    const formData = new FormData();
+    formData.append('image', profilePicture);
+
+    try {
+      await updateProfilePicture(formData).unwrap();
+      toast.success('Profile picture updated successfully');
+    } catch (error) {
+      toast.error('Failed to update profile picture');
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6">
@@ -121,6 +148,54 @@ const Settings = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Image className="mr-2 h-5 w-5" />
+              Profile Picture
+            </CardTitle>
+            <CardDescription>
+              Update your professional photo
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleUpdateProfilePicture} className="space-y-4">
+              <div className="space-y-4">
+                {previewUrl && (
+                  <div className="w-32 h-32 mx-auto rounded-full overflow-hidden border-2 border-gray-200">
+                    <img 
+                      src={previewUrl} 
+                      alt="Profile Preview" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+                <div className="flex items-center justify-center">
+                  <label className="cursor-pointer">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleProfilePictureChange}
+                    />
+                    <div className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900">
+                      <Upload size={16} />
+                      {previewUrl ? 'Change Photo' : 'Upload Photo'}
+                    </div>
+                  </label>
+                </div>
+              </div>
+              
+              {profilePicture && (
+                <Button type="submit" className="w-full">
+                  <Save size={18} className="mr-2" />
+                  Update Profile Picture
+                </Button>
+              )}
+            </form>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center">

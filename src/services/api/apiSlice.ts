@@ -163,6 +163,13 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ['Subscribers'],
     }),
+    updateProfilePicture: builder.mutation<any, FormData>({
+      query: (formData) => ({
+        url: '/admin/profile-picture',
+        method: 'PUT',
+        body: formData,
+      }),
+    }),
   }),
 });
 
@@ -190,4 +197,5 @@ export const {
   useGetBookByIdQuery,
   useGetRecentSubscribersQuery,
   useDeleteSubscribersMutation,
+  useUpdateProfilePictureMutation,
 } = apiSlice;
