@@ -1,12 +1,20 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 
+interface RecentSubscriber {
+  email: string;
+  date: string;
+}
+
+interface RecentSubscribersResponse {
+  status: string;
+  data: RecentSubscriber[];
+}
+
 export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({ 
     baseUrl: 'https://yusuff-i94b.onrender.com/api',
-    
-    // baseUrl: 'http://localhost:3002/api',
     prepareHeaders: (headers, { getState }) => {
       const token = (getState() as any).auth.token;
       if (token) {
@@ -15,6 +23,11 @@ export const apiSlice = createApi({
       return headers;
     },
   }),
+  // Add global configuration for auto-refetching
+  refetchOnFocus: true,
+  refetchOnReconnect: true,
+  refetchOnMountOrArgChange: true,
+  tagTypes: ['AdminBlogs', 'PublicBlogs', 'Books', 'SocialMedia', 'Newsletter', 'Subscribers', 'Stats'],
   endpoints: (builder) => ({
     login: builder.mutation<any, any>({
       query: (credentials) => ({
@@ -25,6 +38,7 @@ export const apiSlice = createApi({
     }),
     getSocialMedia: builder.query<any, void>({
       query: () => '/admin/social-media',
+      providesTags: ['SocialMedia']
     }),
     updateSocialMedia: builder.mutation<any, any>({
       query: (data) => ({
@@ -32,6 +46,7 @@ export const apiSlice = createApi({
         method: 'PUT',
         body: data,
       }),
+      invalidatesTags: ['SocialMedia']
     }),
     subscribeNewsletter: builder.mutation<any, any>({
       query: (data) => ({
@@ -42,15 +57,18 @@ export const apiSlice = createApi({
     }),
     getSubscribers: builder.query<any, void>({
       query: () => '/newsletter/subscribers',
+      providesTags: ['Subscribers']
     }),
     toggleSubscriberStatus: builder.mutation<any, any>({
       query: (id) => ({
         url: `/newsletter/subscribers/${id}/toggle-status`,
         method: 'PATCH',
       }),
+      invalidatesTags: ['Subscribers']
     }),
     getNewsletterStats: builder.query<any, void>({
       query: () => '/newsletter/stats',
+      providesTags: ['Stats']
     }),
     changePassword: builder.mutation<{ status: string; message: string }, any>({
       query: (credentials) => ({
@@ -61,15 +79,15 @@ export const apiSlice = createApi({
     }),
     getBlogs: builder.query<any, void>({
       query: () => '/blogs',
+      providesTags: ['PublicBlogs']
     }),
     createBlog: builder.mutation<any, any>({
       query: (formData) => ({
         url: '/blogs',
         method: 'POST',
         body: formData,
-        // Don't set Content-Type header, browser will set it with boundary
-        // formData: true,
       }),
+      invalidatesTags: ['AdminBlogs', 'PublicBlogs']
     }),
     updateBlog: builder.mutation<any, { id: string; formData: FormData }>({
       query: ({ id, formData }) => ({
@@ -77,10 +95,12 @@ export const apiSlice = createApi({
         method: 'PATCH',
         body: formData,
       }),
+      invalidatesTags: ['AdminBlogs', 'PublicBlogs']
     }),
     // Get blogs for admin dashboard
     getAdminBlogs: builder.query<any, void>({
       query: () => '/blogs/admin',
+      providesTags: ['AdminBlogs']
     }),
     // Get public blogs with pagination and filtering
     getPublicBlogs: builder.query<any, { page?: number; limit?: number; category?: string }>({
@@ -107,21 +127,21 @@ export const apiSlice = createApi({
     }),
     getPublicBlogPost: builder.query<any, string>({
       query: (id) => `/blogs/public/${id}`,
-      transformResponse: (response: any) => response.data,
     }),
     createBook: builder.mutation<any, any>({
       query: (formData) => ({
         url: '/books',
         method: 'POST',
         body: formData,
-       
       }),
+      invalidatesTags: ['Books']
     }),
     getAdminBooks: builder.query<any, void>({
       query: () => '/admin/books',
     }),
     getPublicBooks: builder.query<any, void>({
       query: () => '/books',
+      providesTags: ['Books']
     }),
     getBookDetail: builder.query<any, string>({
       query: (id) => `/books/${id}`,
@@ -131,8 +151,11 @@ export const apiSlice = createApi({
       query: (id) => `/books/${id}`,
       transformResponse: (response: { status: string; data: any }) => response.data,
     }),
+    getRecentSubscribers: builder.query<RecentSubscribersResponse, void>({
+      query: () => '/newsletter/recent-subscribers',
+      providesTags: ['Subscribers'],
+    }),
   }),
-  tagTypes: ['AdminBlogs', 'PublicBlogs'],
 });
 
 export const { 
@@ -157,4 +180,5 @@ export const {
   useGetPublicBooksQuery,
   useGetBookDetailQuery,
   useGetBookByIdQuery,
+  useGetRecentSubscribersQuery,
 } = apiSlice;

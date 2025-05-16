@@ -20,9 +20,9 @@ import { useGetPublicBlogPostQuery } from '@/services/api/apiSlice';
 
 const BlogPost = () => {
   const { blogId } = useParams<{ blogId: string }>();
-  const { data: post, isLoading, error } = useGetPublicBlogPostQuery(blogId || '');
-  const { toast } = useToast();
 
+  const { data: post, isLoading, error } = useGetPublicBlogPostQuery(blogId);
+  const { toast } = useToast();
   useEffect(() => {
     // Scroll to top when page loads
     window.scrollTo(0, 0);
@@ -202,7 +202,7 @@ const BlogPost = () => {
                 <span className="flex items-center text-gray-600 mr-2">
                   <Tag className="w-4 h-4 mr-1" /> Tags:
                 </span>
-                {post.tags.map((tag, index) => (
+                {post?.tags?.map((tag, index) => (
                   <Badge key={index} variant="outline" className="border-navy/30 text-navy/70">
                     {tag}
                   </Badge>

@@ -1,9 +1,11 @@
-
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Book, Users, FileText, Eye, ArrowUp, ArrowDown, Mail } from "lucide-react";
+import { useGetRecentSubscribersQuery } from '@/services/api/apiSlice';
 
 const Dashboard = () => {
+  const { data: recentSubscribersData, isLoading: isLoadingSubscribers } = useGetRecentSubscribersQuery();
+
   // Mock data for dashboard
   const stats = [
     { 
@@ -34,15 +36,6 @@ const Dashboard = () => {
       change: 3.5,
       status: "decrease"
     },
-  ];
-
-  // Mock recent subscribers data
-  const recentSubscribers = [
-    { id: 1, email: "john.doe@example.com", date: "2023-05-10" },
-    { id: 2, email: "jane.smith@example.com", date: "2023-05-09" },
-    { id: 3, email: "robert.johnson@example.com", date: "2023-05-09" },
-    { id: 4, email: "lisa.brown@example.com", date: "2023-05-08" },
-    { id: 5, email: "michael.davis@example.com", date: "2023-05-07" },
   ];
 
   return (
@@ -121,11 +114,13 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentSubscribers.map((subscriber) => (
-                <div key={subscriber.id} className="flex items-center justify-between">
+              {isLoadingSubscribers ? (
+                <p>Loading subscribers...</p>
+              ) : recentSubscribersData?.data.slice(0, 5).map((subscriber, index) => (
+                <div key={index} className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium">{subscriber.email}</p>
-                    <p className="text-xs text-gray-500">{subscriber.date}</p>
+                    <p className="text-xs text-gray-500">{new Date(subscriber.date).toLocaleDateString()}</p>
                   </div>
                 </div>
               ))}

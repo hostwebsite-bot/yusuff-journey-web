@@ -84,7 +84,7 @@ const Books = () => {
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-4">
-                  <Link to={`/books/${featuredBook.slug}`}>
+                  <Link to={`/books/${featuredBook._id}`}>
                     <Button className="bg-navy hover:bg-navy-light text-white">
                       Learn More
                     </Button>
@@ -146,7 +146,7 @@ const Books = () => {
                       ))}
                     </div>
                     <div className="flex gap-3">
-                      <Link to={`/books/${book.slug}`} className="flex-1">
+                      <Link to={`/books/${book._id}`} className="flex-1">
                         <Button className="w-full bg-navy hover:bg-navy-light text-white">
                           <BookOpen className="mr-2 h-4 w-4" />
                           Details
