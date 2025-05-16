@@ -75,7 +75,13 @@ const BlogPreview = () => {
       category: "finance",
       slug: "financial-habits-students",
       readTime: "8 min read",
-      image: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"
+      image: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+      formattedContent: [
+        { type: 'heading', content: '1. Create and Stick to a Budget' },
+        { type: 'paragraph', content: 'A budget is your financial roadmap. Start by tracking all income sources, including allowances, part-time jobs, scholarships, or loans.' },
+        { type: 'heading', content: '2. Build an Emergency Fund' },
+        { type: 'paragraph', content: 'Life is unpredictable. An unexpected medical expense, laptop repair, or car breakdown can derail your financial stability.' }
+      ]
     },
     {
       title: "5 Study Techniques That Actually Work, According to Science",

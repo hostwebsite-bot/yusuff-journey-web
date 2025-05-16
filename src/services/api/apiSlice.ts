@@ -32,6 +32,10 @@ interface BlogPost {
   date: string;
   image: string;
   readTime?: string;
+  formattedContent?: {
+    type: 'paragraph' | 'heading' | 'list' | 'numbered' | 'quote';
+    content: string;
+  }[];
 }
 
 interface SocialMediaData {

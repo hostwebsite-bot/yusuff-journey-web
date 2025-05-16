@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,12 +5,28 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from '@/components/ui/sonner';
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { Plus, Edit, Trash2, ListOrdered, Hash, ListChecked } from "lucide-react";
 import { BlogPost } from '@/services/api/apiSlice';
+import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription } from '@/components/ui/form';
+
+// Define content block types
+type ContentBlockType = 'paragraph' | 'heading' | 'list' | 'numbered' | 'quote';
+
+interface ContentBlock {
+  type: ContentBlockType;
+  content: string;
+  id: string;
+}
 
 const Blogs = () => {
   const [open, setOpen] = useState(false);
   const [editingBlog, setEditingBlog] = useState<BlogPost | null>(null);
+  const [activeTab, setActiveTab] = useState('basic');
+  const [contentBlocks, setContentBlocks] = useState<ContentBlock[]>([
+    { type: 'paragraph', content: '', id: '1' }
+  ]);
   
   // Mock blog data that matches the structure on the main blog page
   const [blogs, setBlogs] = useState<BlogPost[]>([
@@ -24,7 +39,13 @@ const Blogs = () => {
       category: "finance",
       date: "May 10, 2025",
       image: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-      readTime: "8 min read"
+      readTime: "8 min read",
+      formattedContent: [
+        { type: 'heading', content: '1. Create and Stick to a Budget' },
+        { type: 'paragraph', content: 'A budget is your financial roadmap. Start by tracking all income sources, including allowances, part-time jobs, scholarships, or loans.' },
+        { type: 'heading', content: '2. Build an Emergency Fund' },
+        { type: 'paragraph', content: 'Life is unpredictable. An unexpected medical expense, laptop repair, or car breakdown can derail your financial stability.' },
+      ]
     },
     {
       id: 'passion-purpose-education',
@@ -55,6 +76,13 @@ const Blogs = () => {
     if (blog) {
       setFormData(blog);
       setEditingBlog(blog);
+      setContentBlocks(blog.formattedContent ? 
+        blog.formattedContent.map((block, index) => ({
+          ...block,
+          id: index.toString()
+        })) as ContentBlock[] : 
+        [{ type: 'paragraph', content: blog.content, id: '0' }]
+      );
     } else {
       setFormData({
         id: "",
@@ -68,8 +96,12 @@ const Blogs = () => {
         readTime: "5 min read"
       });
       setEditingBlog(null);
+      setContentBlocks([
+        { type: 'paragraph', content: '', id: '1' }
+      ]);
     }
     setOpen(true);
+    setActiveTab('basic');
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -80,17 +112,73 @@ const Blogs = () => {
     }));
   };
 
+  const handleContentBlockChange = (id: string, content: string) => {
+    setContentBlocks(prevBlocks => 
+      prevBlocks.map(block => 
+        block.id === id ? { ...block, content } : block
+      )
+    );
+  };
+
+  const handleContentTypeChange = (id: string, type: ContentBlockType) => {
+    setContentBlocks(prevBlocks => 
+      prevBlocks.map(block => 
+        block.id === id ? { ...block, type } : block
+      )
+    );
+  };
+
+  const addContentBlock = (type: ContentBlockType = 'paragraph') => {
+    const newId = Date.now().toString();
+    setContentBlocks(prev => [...prev, { type, content: '', id: newId }]);
+  };
+
+  const removeContentBlock = (id: string) => {
+    if (contentBlocks.length > 1) {
+      setContentBlocks(prevBlocks => prevBlocks.filter(block => block.id !== id));
+    } else {
+      toast.error("You must have at least one content block");
+    }
+  };
+  
+  const moveContentBlock = (id: string, direction: 'up' | 'down') => {
+    const currentIndex = contentBlocks.findIndex(block => block.id === id);
+    if (
+      (direction === 'up' && currentIndex === 0) || 
+      (direction === 'down' && currentIndex === contentBlocks.length - 1)
+    ) {
+      return;
+    }
+    
+    const newBlocks = [...contentBlocks];
+    const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    const temp = newBlocks[currentIndex];
+    newBlocks[currentIndex] = newBlocks[targetIndex];
+    newBlocks[targetIndex] = temp;
+    
+    setContentBlocks(newBlocks);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Combine content blocks into one string for compatibility with existing structure
+    const combinedContent = contentBlocks.map(block => block.content).join('\n\n');
+    
+    const blogWithContent = {
+      ...formData,
+      content: combinedContent,
+      formattedContent: contentBlocks.map(({ id, ...rest }) => rest)
+    };
+    
     if (editingBlog) {
       // Update existing blog
-      setBlogs(blogs.map(blog => blog.id === editingBlog.id ? formData : blog));
+      setBlogs(blogs.map(blog => blog.id === editingBlog.id ? blogWithContent : blog));
       toast.success(`Blog post "${formData.title}" has been updated`);
     } else {
       // Add new blog with generated ID
       const newBlog = {
-        ...formData,
+        ...blogWithContent,
         id: formData.id || formData.title.toLowerCase().replace(/\s+/g, "-"),
         date: formData.date || new Date().toISOString().split('T')[0]
       };
@@ -115,6 +203,44 @@ const Blogs = () => {
     { id: 'entrepreneurship', name: 'Entrepreneurship' },
     { id: 'personal', name: 'Personal Development' }
   ];
+
+  // Preview formatted content
+  const renderPreview = () => {
+    return (
+      <div className="prose max-w-none p-4 bg-gray-50 rounded-md">
+        {contentBlocks.map((block, index) => {
+          switch (block.type) {
+            case 'heading':
+              return <h3 key={block.id} className="font-bold text-xl my-4">{block.content}</h3>;
+            case 'list':
+              return (
+                <ul key={block.id} className="list-disc pl-6 my-4">
+                  {block.content.split('\n').filter(Boolean).map((item, i) => (
+                    <li key={i}>{item}</li>
+                  ))}
+                </ul>
+              );
+            case 'numbered':
+              return (
+                <ol key={block.id} className="list-decimal pl-6 my-4">
+                  {block.content.split('\n').filter(Boolean).map((item, i) => (
+                    <li key={i}>{item}</li>
+                  ))}
+                </ol>
+              );
+            case 'quote':
+              return (
+                <blockquote key={block.id} className="border-l-4 border-gray-200 pl-4 italic my-4">
+                  {block.content}
+                </blockquote>
+              );
+            default:
+              return <p key={block.id} className="my-4">{block.content}</p>;
+          }
+        })}
+      </div>
+    );
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -165,132 +291,249 @@ const Blogs = () => {
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-[700px]">
+        <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingBlog ? "Edit Blog Post" : "Add New Blog Post"}</DialogTitle>
             <DialogDescription>
               {editingBlog ? "Update the details of this blog post" : "Fill in the details for the new blog post"}
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleSubmit}>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label htmlFor="title" className="text-sm font-medium">Title</label>
-                  <Input
-                    id="title"
-                    name="title"
-                    value={formData.title}
-                    onChange={handleChange}
-                    required
-                  />
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid grid-cols-2">
+              <TabsTrigger value="basic">Basic Info</TabsTrigger>
+              <TabsTrigger value="content">Content Editor</TabsTrigger>
+            </TabsList>
+            <form onSubmit={handleSubmit}>
+              <TabsContent value="basic">
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label htmlFor="title" className="text-sm font-medium">Title</label>
+                      <Input
+                        id="title"
+                        name="title"
+                        value={formData.title}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="category" className="text-sm font-medium">Category</label>
+                      <select
+                        id="category"
+                        name="category"
+                        value={formData.category}
+                        onChange={handleChange as any}
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        required
+                      >
+                        <option value="">Select category</option>
+                        {categoryOptions.map(category => (
+                          <option key={category.id} value={category.id}>
+                            {category.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label htmlFor="author" className="text-sm font-medium">Author</label>
+                      <Input
+                        id="author"
+                        name="author"
+                        value={formData.author}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="date" className="text-sm font-medium">Publish Date</label>
+                      <Input
+                        id="date"
+                        name="date"
+                        type="date"
+                        value={formData.date}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label htmlFor="id" className="text-sm font-medium">ID/Slug</label>
+                      <Input
+                        id="id"
+                        name="id"
+                        value={formData.id}
+                        onChange={handleChange}
+                        placeholder="post-slug (auto-generated if empty)"
+                        disabled={!!editingBlog}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="readTime" className="text-sm font-medium">Read Time</label>
+                      <Input
+                        id="readTime"
+                        name="readTime"
+                        value={formData.readTime}
+                        onChange={handleChange}
+                        placeholder="5 min read"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label htmlFor="image" className="text-sm font-medium">Featured Image URL</label>
+                    <Input
+                      id="image"
+                      name="image"
+                      value={formData.image}
+                      onChange={handleChange}
+                      placeholder="/images/blog-image.jpg"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label htmlFor="excerpt" className="text-sm font-medium">Excerpt</label>
+                    <Input
+                      id="excerpt"
+                      name="excerpt"
+                      value={formData.excerpt}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <label htmlFor="category" className="text-sm font-medium">Category</label>
-                  <select
-                    id="category"
-                    name="category"
-                    value={formData.category}
-                    onChange={handleChange as any}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    required
-                  >
-                    <option value="">Select category</option>
-                    {categoryOptions.map(category => (
-                      <option key={category.id} value={category.id}>
-                        {category.name}
-                      </option>
+              </TabsContent>
+              
+              <TabsContent value="content">
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-medium">Content Blocks</h3>
+                    <div className="flex gap-2">
+                      <Button type="button" variant="outline" onClick={() => addContentBlock('paragraph')}>
+                        Add Paragraph
+                      </Button>
+                      <Button type="button" variant="outline" onClick={() => addContentBlock('heading')}>
+                        Add Heading
+                      </Button>
+                      <Button type="button" variant="outline" onClick={() => addContentBlock('list')}>
+                        Add List
+                      </Button>
+                      <Button type="button" variant="outline" onClick={() => addContentBlock('numbered')}>
+                        Add Numbered List
+                      </Button>
+                      <Button type="button" variant="outline" onClick={() => addContentBlock('quote')}>
+                        Add Quote
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    {contentBlocks.map((block, index) => (
+                      <div key={block.id} className="border rounded-md p-4 bg-white">
+                        <div className="flex justify-between items-center mb-2">
+                          <div className="flex gap-2">
+                            <select
+                              value={block.type}
+                              onChange={(e) => handleContentTypeChange(block.id, e.target.value as ContentBlockType)}
+                              className="text-sm border border-gray-300 rounded px-2 py-1"
+                            >
+                              <option value="paragraph">Paragraph</option>
+                              <option value="heading">Heading</option>
+                              <option value="list">Bullet List</option>
+                              <option value="numbered">Numbered List</option>
+                              <option value="quote">Quote</option>
+                            </select>
+                            
+                            {block.type === 'heading' && (
+                              <div className="flex items-center gap-1">
+                                <Hash size={16} className="text-gray-500" />
+                                <span className="text-sm text-gray-500">Heading</span>
+                              </div>
+                            )}
+                            
+                            {block.type === 'list' && (
+                              <div className="flex items-center gap-1">
+                                <ListChecked size={16} className="text-gray-500" />
+                                <span className="text-sm text-gray-500">For bullet points, add each item on a new line</span>
+                              </div>
+                            )}
+                            
+                            {block.type === 'numbered' && (
+                              <div className="flex items-center gap-1">
+                                <ListOrdered size={16} className="text-gray-500" />
+                                <span className="text-sm text-gray-500">For numbered items, add each item on a new line</span>
+                              </div>
+                            )}
+                          </div>
+                          
+                          <div className="flex gap-2">
+                            <Button 
+                              type="button" 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => moveContentBlock(block.id, 'up')}
+                              disabled={index === 0}
+                            >
+                              ↑
+                            </Button>
+                            <Button 
+                              type="button" 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => moveContentBlock(block.id, 'down')}
+                              disabled={index === contentBlocks.length - 1}
+                            >
+                              ↓
+                            </Button>
+                            <Button 
+                              type="button" 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => removeContentBlock(block.id)}
+                              disabled={contentBlocks.length === 1}
+                            >
+                              ×
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        <Textarea
+                          value={block.content}
+                          onChange={(e) => handleContentBlockChange(block.id, e.target.value)}
+                          placeholder={
+                            block.type === 'heading' ? 'Enter heading text...' :
+                            block.type === 'list' || block.type === 'numbered' ? 'Enter each item on a new line...' :
+                            block.type === 'quote' ? 'Enter quote text...' :
+                            'Enter paragraph text...'
+                          }
+                          className="min-h-[100px]"
+                        />
+                      </div>
                     ))}
-                  </select>
+                  </div>
+                  
+                  <div className="border-t pt-4">
+                    <h3 className="text-lg font-medium mb-4">Preview</h3>
+                    {renderPreview()}
+                  </div>
                 </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label htmlFor="author" className="text-sm font-medium">Author</label>
-                  <Input
-                    id="author"
-                    name="author"
-                    value={formData.author}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label htmlFor="date" className="text-sm font-medium">Publish Date</label>
-                  <Input
-                    id="date"
-                    name="date"
-                    type="date"
-                    value={formData.date}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label htmlFor="id" className="text-sm font-medium">ID/Slug</label>
-                  <Input
-                    id="id"
-                    name="id"
-                    value={formData.id}
-                    onChange={handleChange}
-                    placeholder="post-slug (auto-generated if empty)"
-                    disabled={!!editingBlog}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label htmlFor="readTime" className="text-sm font-medium">Read Time</label>
-                  <Input
-                    id="readTime"
-                    name="readTime"
-                    value={formData.readTime}
-                    onChange={handleChange}
-                    placeholder="5 min read"
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="image" className="text-sm font-medium">Featured Image URL</label>
-                <Input
-                  id="image"
-                  name="image"
-                  value={formData.image}
-                  onChange={handleChange}
-                  placeholder="/images/blog-image.jpg"
-                />
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="excerpt" className="text-sm font-medium">Excerpt</label>
-                <Input
-                  id="excerpt"
-                  name="excerpt"
-                  value={formData.excerpt}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="content" className="text-sm font-medium">Content</label>
-                <textarea
-                  id="content"
-                  name="content"
-                  value={formData.content}
-                  onChange={handleChange}
-                  className="flex h-32 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm resize-none"
-                  required
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit">
-                {editingBlog ? "Save Changes" : "Publish Post"}
-              </Button>
-            </DialogFooter>
-          </form>
+              </TabsContent>
+              
+              <DialogFooter className="mt-6">
+                <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit">
+                  {editingBlog ? "Save Changes" : "Publish Post"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Tabs>
         </DialogContent>
       </Dialog>
     </div>
