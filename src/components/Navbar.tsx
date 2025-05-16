@@ -45,7 +45,6 @@ const Navbar = () => {
         <div className="hidden md:flex items-center gap-8">
           <Link to="/" className={`font-montserrat font-medium text-navy hover:text-navy-light transition ${isActive("/")}`}>Home</Link>
           <Link to="/about" className={`font-montserrat font-medium text-navy hover:text-navy-light transition ${isActive("/about")}`}>About</Link>
-          <Link to="/books" className={`font-montserrat font-medium text-navy hover:text-navy-light transition ${isActive("/books")}`}>Books</Link>
           <Link to="/daytopia" className={`font-montserrat font-medium text-navy hover:text-navy-light transition ${isActive("/daytopia")}`}>Daytopia</Link>
           <Link to="/vacua" className={`font-montserrat font-medium text-navy hover:text-navy-light transition ${isActive("/vacua")}`}>Vacua</Link>
           <Link to="/blog" className={`font-montserrat font-medium text-navy hover:text-navy-light transition ${isActive("/blog")}`}>Blog</Link>
@@ -75,7 +74,6 @@ const Navbar = () => {
           <div className="container mx-auto py-4 flex flex-col gap-4">
             <Link to="/" className={`font-montserrat font-medium text-navy hover:text-navy-light px-4 py-2 ${isActive("/")}`}>Home</Link>
             <Link to="/about" className={`font-montserrat font-medium text-navy hover:text-navy-light px-4 py-2 ${isActive("/about")}`}>About</Link>
-            <Link to="/books" className={`font-montserrat font-medium text-navy hover:text-navy-light px-4 py-2 ${isActive("/books")}`}>Books</Link>
             <Link to="/daytopia" className={`font-montserrat font-medium text-navy hover:text-navy-light px-4 py-2 ${isActive("/daytopia")}`}>Daytopia</Link>
             <Link to="/vacua" className={`font-montserrat font-medium text-navy hover:text-navy-light px-4 py-2 ${isActive("/vacua")}`}>Vacua</Link>
             <Link to="/blog" className={`font-montserrat font-medium text-navy hover:text-navy-light px-4 py-2 ${isActive("/blog")}`}>Blog</Link>
