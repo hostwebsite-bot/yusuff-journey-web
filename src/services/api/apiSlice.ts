@@ -4,7 +4,8 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({ 
-    baseUrl: 'https://yusuff-o2ml.onrender.com/api',
+    baseUrl: 'https://yusuff-i94b.onrender.com/api',
+    
     // baseUrl: 'http://localhost:3002/api',
     prepareHeaders: (headers, { getState }) => {
       const token = (getState() as any).auth.token;
