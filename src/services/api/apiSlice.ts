@@ -21,6 +21,19 @@ interface Book {
   categories?: string[];
 }
 
+// Blog interface that matches both admin and public pages
+interface BlogPost {
+  id: string;
+  title: string;
+  author: string;
+  excerpt: string;
+  content: string;
+  category: string;
+  date: string;
+  image: string;
+  readTime?: string;
+}
+
 interface SocialMediaData {
   facebookUrl: string;
   twitterUrl: string;
@@ -96,3 +109,5 @@ export const {
   useUpdateSocialMediaMutation,
   useSubscribeNewsletterMutation,
 } = apiSlice;
+
+export type { Book, BlogPost };

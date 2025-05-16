@@ -2,17 +2,38 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { BlogPost } from '@/services/api/apiSlice';
 
-interface BlogPostProps {
+interface BlogPostCardProps {
   title: string;
   excerpt: string;
   date: string;
   category: string;
   imageUrl?: string;
   slug: string;
+  readTime?: string;
 }
 
-const BlogPostCard: React.FC<BlogPostProps> = ({ title, excerpt, date, category, imageUrl, slug }) => {
+const BlogPostCard: React.FC<BlogPostCardProps> = ({ 
+  title, 
+  excerpt, 
+  date, 
+  category, 
+  imageUrl, 
+  slug,
+  readTime
+}) => {
+  // Map category ID to display name
+  const getCategoryName = (categoryId: string) => {
+    const categories = {
+      'finance': 'Financial Literacy',
+      'education': 'Education',
+      'entrepreneurship': 'Entrepreneurship',
+      'personal': 'Personal Development'
+    };
+    return categories[categoryId as keyof typeof categories] || categoryId;
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:-translate-y-1 hover:shadow-lg">
       <div className="h-48 bg-gray-200 relative">
@@ -24,11 +45,13 @@ const BlogPostCard: React.FC<BlogPostProps> = ({ title, excerpt, date, category,
           </div>
         )}
         <div className="absolute top-4 right-4 bg-navy text-white text-xs py-1 px-2 rounded-full font-montserrat">
-          {category}
+          {getCategoryName(category)}
         </div>
       </div>
       <div className="p-6">
-        <p className="text-sm text-gray-500 mb-2">{date}</p>
+        <p className="text-sm text-gray-500 mb-2">
+          {date} {readTime && `• ${readTime}`}
+        </p>
         <h4 className="font-montserrat font-bold text-navy text-xl mb-2 line-clamp-2">{title}</h4>
         <p className="text-gray-700 mb-4 line-clamp-3">{excerpt}</p>
         <Link to={`/blog/${slug}`} className="text-navy font-medium hover:text-navy-light flex items-center">
@@ -43,27 +66,34 @@ const BlogPostCard: React.FC<BlogPostProps> = ({ title, excerpt, date, category,
 };
 
 const BlogPreview = () => {
+  // Blog post data matching the admin structure
   const blogPosts = [
     {
-      title: "5 Financial Habits Every Student Should Develop Now",
-      excerpt: "Learn the essential financial habits that can set you up for long-term success and financial independence while still in school.",
+      title: "The Impact of Financial Literacy on Academic Success",
+      excerpt: "Exploring the often-overlooked connection between understanding personal finance and achieving academic excellence.",
       date: "May 10, 2025",
-      category: "Finance",
-      slug: "financial-habits-students"
+      category: "finance",
+      slug: "financial-habits-students",
+      readTime: "8 min read",
+      image: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"
     },
     {
-      title: "How Passion and Purpose Drive Educational Success",
-      excerpt: "Discover how finding your purpose can transform your educational journey and lead to greater achievement and fulfillment.",
-      date: "April 28, 2025",
-      category: "Education",
-      slug: "passion-purpose-education"
+      title: "5 Study Techniques That Actually Work, According to Science",
+      excerpt: "Evidence-based approaches to studying that can dramatically improve retention and understanding of complex material.",
+      date: "May 3, 2025",
+      category: "education",
+      slug: "passion-purpose-education",
+      readTime: "6 min read",
+      image: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"
     },
     {
-      title: "The Entrepreneurial Mindset: Starting Your First Business as a Student",
-      excerpt: "Practical advice for students looking to launch their entrepreneurial journey while balancing their academic responsibilities.",
-      date: "April 15, 2025",
-      category: "Entrepreneurship",
-      slug: "entrepreneurial-mindset-students"
+      title: "Building Your First Business While Still in School",
+      excerpt: "A practical guide for students looking to develop entrepreneurial skills and launch their first venture before graduation.",
+      date: "April 25, 2025",
+      category: "entrepreneurship",
+      slug: "entrepreneurial-mindset-students",
+      readTime: "10 min read",
+      image: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"
     }
   ];
 
@@ -84,7 +114,16 @@ const BlogPreview = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-10">
           {blogPosts.map((post, index) => (
-            <BlogPostCard key={index} {...post} />
+            <BlogPostCard 
+              key={index} 
+              title={post.title} 
+              excerpt={post.excerpt} 
+              date={post.date} 
+              category={post.category} 
+              slug={post.slug} 
+              imageUrl={post.image} 
+              readTime={post.readTime} 
+            />
           ))}
         </div>
         

@@ -6,37 +6,40 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from '@/components/ui/sonner';
-import { Plus, Edit, Trash2, Eye } from "lucide-react";
+import { Plus, Edit, Trash2 } from "lucide-react";
+import { BlogPost } from '@/services/api/apiSlice';
 
 const Blogs = () => {
   const [open, setOpen] = useState(false);
-  const [editingBlog, setEditingBlog] = useState<any>(null);
+  const [editingBlog, setEditingBlog] = useState<BlogPost | null>(null);
   
-  // Mock blog data
-  const [blogs, setBlogs] = useState([
+  // Mock blog data that matches the structure on the main blog page
+  const [blogs, setBlogs] = useState<BlogPost[]>([
     {
-      id: "top-10-study-tips",
-      title: "Top 10 Study Tips for Students",
+      id: 'financial-habits-students',
+      title: 'The Impact of Financial Literacy on Academic Success',
       author: "Dr. Awosanya Yusuff",
-      excerpt: "Effective strategies to improve your study habits and academic performance.",
+      excerpt: "Exploring the often-overlooked connection between understanding personal finance and achieving academic excellence.",
       content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit...",
-      category: "Education",
-      date: "2023-04-15",
-      image: "/placeholder.svg"
+      category: "finance",
+      date: "May 10, 2025",
+      image: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+      readTime: "8 min read"
     },
     {
-      id: "finding-purpose",
-      title: "Finding Your Purpose in Life",
+      id: 'passion-purpose-education',
+      title: '5 Study Techniques That Actually Work, According to Science',
       author: "Dr. Awosanya Yusuff",
-      excerpt: "A guide to discovering your passion and living a more fulfilling life.",
+      excerpt: "Evidence-based approaches to studying that can dramatically improve retention and understanding of complex material.",
       content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit...",
-      category: "Personal Development",
-      date: "2023-03-22",
-      image: "/placeholder.svg"
+      category: "education",
+      date: "May 3, 2025",
+      image: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+      readTime: "6 min read"
     }
   ]);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<BlogPost>({
     id: "",
     title: "",
     author: "",
@@ -44,10 +47,11 @@ const Blogs = () => {
     content: "",
     category: "",
     date: "",
-    image: ""
+    image: "",
+    readTime: ""
   });
 
-  const handleOpenDialog = (blog = null) => {
+  const handleOpenDialog = (blog: BlogPost | null = null) => {
     if (blog) {
       setFormData(blog);
       setEditingBlog(blog);
@@ -55,12 +59,13 @@ const Blogs = () => {
       setFormData({
         id: "",
         title: "",
-        author: "",
+        author: "Dr. Awosanya Yusuff",
         excerpt: "",
         content: "",
         category: "",
         date: new Date().toISOString().split('T')[0],
-        image: ""
+        image: "",
+        readTime: "5 min read"
       });
       setEditingBlog(null);
     }
@@ -103,6 +108,14 @@ const Blogs = () => {
     }
   };
 
+  // Category options that match the main blog page
+  const categoryOptions = [
+    { id: 'finance', name: 'Financial Literacy' },
+    { id: 'education', name: 'Education' },
+    { id: 'entrepreneurship', name: 'Entrepreneurship' },
+    { id: 'personal', name: 'Personal Development' }
+  ];
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
@@ -121,6 +134,7 @@ const Blogs = () => {
               <TableHead>Title</TableHead>
               <TableHead>Category</TableHead>
               <TableHead>Date</TableHead>
+              <TableHead>Read Time</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -131,8 +145,11 @@ const Blogs = () => {
                   <Checkbox />
                 </TableCell>
                 <TableCell className="font-medium">{blog.title}</TableCell>
-                <TableCell>{blog.category}</TableCell>
+                <TableCell>
+                  {categoryOptions.find(cat => cat.id === blog.category)?.name || blog.category}
+                </TableCell>
                 <TableCell>{blog.date}</TableCell>
+                <TableCell>{blog.readTime}</TableCell>
                 <TableCell className="text-right">
                   <Button variant="ghost" size="sm" onClick={() => handleOpenDialog(blog)}>
                     <Edit size={16} />
@@ -170,13 +187,21 @@ const Blogs = () => {
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="category" className="text-sm font-medium">Category</label>
-                  <Input
+                  <select
                     id="category"
                     name="category"
                     value={formData.category}
-                    onChange={handleChange}
+                    onChange={handleChange as any}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     required
-                  />
+                  >
+                    <option value="">Select category</option>
+                    {categoryOptions.map(category => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -215,15 +240,25 @@ const Blogs = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="image" className="text-sm font-medium">Featured Image URL</label>
+                  <label htmlFor="readTime" className="text-sm font-medium">Read Time</label>
                   <Input
-                    id="image"
-                    name="image"
-                    value={formData.image}
+                    id="readTime"
+                    name="readTime"
+                    value={formData.readTime}
                     onChange={handleChange}
-                    placeholder="/images/blog-image.jpg"
+                    placeholder="5 min read"
                   />
                 </div>
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="image" className="text-sm font-medium">Featured Image URL</label>
+                <Input
+                  id="image"
+                  name="image"
+                  value={formData.image}
+                  onChange={handleChange}
+                  placeholder="/images/blog-image.jpg"
+                />
               </div>
               <div className="space-y-2">
                 <label htmlFor="excerpt" className="text-sm font-medium">Excerpt</label>
