@@ -149,12 +149,6 @@ interface PublicBlog {
   slug: string;
 }
 
-interface PublicBooksResponse {
-  status: string;
-  results: number;
-  data: PublicBook[];
-}
-
 interface BlogPostDetail {
   _id: string;
   title: string;
@@ -226,6 +220,33 @@ interface AdminBooksResponse {
   data: AdminBook[];
 }
 
+interface BookDetail {
+  _id: string;
+  title: string;
+  shortTitle: string;
+  subtitle: string;
+  author: string;
+  description: string;
+  price: number;
+  published: string;
+  image: string;
+  featured: boolean;
+  categories: string[];
+  isbn: string;
+  pages: number;
+  rating: number;
+  globalReaders: string;
+  publicationYear: string;
+  amazonLink: string;
+  views: number;
+  slug: string;
+}
+
+interface BookDetailResponse {
+  status: string;
+  data: BookDetail;
+}
+
 export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({ 
@@ -240,40 +261,40 @@ export const apiSlice = createApi({
     },
   }),
   endpoints: (builder) => ({
-    login: builder.mutation<LoginResponse, any>({
+    login: builder.mutation<any, any>({
       query: (credentials) => ({
         url: '/admin/login',
         method: 'POST',
         body: credentials,
       }),
     }),
-    getSocialMedia: builder.query<SocialMediaResponse, void>({
+    getSocialMedia: builder.query<any, void>({
       query: () => '/admin/social-media',
     }),
-    updateSocialMedia: builder.mutation<SocialMediaResponse, SocialMediaData>({
+    updateSocialMedia: builder.mutation<any, any>({
       query: (data) => ({
         url: '/admin/social-media',
         method: 'PUT',
         body: data,
       }),
     }),
-    subscribeNewsletter: builder.mutation<NewsletterResponse, any>({
+    subscribeNewsletter: builder.mutation<any, any>({
       query: (data) => ({
         url: '/newsletter/subscribe',
         method: 'POST',
         body: data,
       }),
     }),
-    getSubscribers: builder.query<SubscribersResponse, void>({
+    getSubscribers: builder.query<any, void>({
       query: () => '/newsletter/subscribers',
     }),
-    toggleSubscriberStatus: builder.mutation<ToggleStatusResponse, any>({
+    toggleSubscriberStatus: builder.mutation<any, any>({
       query: (id) => ({
         url: `/newsletter/subscribers/${id}/toggle-status`,
         method: 'PATCH',
       }),
     }),
-    getNewsletterStats: builder.query<StatsResponse, void>({
+    getNewsletterStats: builder.query<any, void>({
       query: () => '/newsletter/stats',
     }),
     changePassword: builder.mutation<{ status: string; message: string }, ChangePasswordRequest>({
@@ -283,10 +304,10 @@ export const apiSlice = createApi({
         body: credentials,
       }),
     }),
-    getBlogs: builder.query<{ status: string; data: BlogPost[] }, void>({
+    getBlogs: builder.query<any, void>({
       query: () => '/blogs',
     }),
-    createBlog: builder.mutation<BlogResponse, any>({
+    createBlog: builder.mutation<any, any>({
       query: (formData) => ({
         url: '/blogs',
         method: 'POST',
@@ -295,16 +316,15 @@ export const apiSlice = createApi({
         // formData: true,
       }),
     }),
-    updateBlog: builder.mutation<BlogResponse, { id: string; formData: FormData }>({
+    updateBlog: builder.mutation<any, { id: string; formData: FormData }>({
       query: ({ id, formData }) => ({
         url: `/blogs/${id}`,
         method: 'PATCH',
         body: formData,
-        formData: true,
       }),
     }),
     // Get blogs for admin dashboard
-    getAdminBlogs: builder.query<AdminBlogsResponse, void>({
+    getAdminBlogs: builder.query<any, void>({
       query: () => '/blogs/admin',
     }),
     // Get public blogs with pagination and filtering
@@ -330,11 +350,11 @@ export const apiSlice = createApi({
       // Invalidate relevant queries after deletion
       invalidatesTags: ['AdminBlogs', 'PublicBlogs'],
     }),
-    getPublicBlogPost: builder.query<BlogPostDetail, string>({
+    getPublicBlogPost: builder.query<any, string>({
       query: (id) => `/blogs/public/${id}`,
-      transformResponse: (response: BlogPostResponse) => response.data,
+      transformResponse: (response: any) => response.data,
     }),
-    createBook: builder.mutation<BookResponse, any>({
+    createBook: builder.mutation<any, any>({
       query: (formData) => ({
         url: '/books',
         method: 'POST',
@@ -342,11 +362,19 @@ export const apiSlice = createApi({
        
       }),
     }),
-    getAdminBooks: builder.query<AdminBooksResponse, void>({
+    getAdminBooks: builder.query<any, void>({
       query: () => '/admin/books',
     }),
-    getPublicBooks: builder.query<PublicBooksResponse, void>({
+    getPublicBooks: builder.query<any, void>({
       query: () => '/books',
+    }),
+    getBookDetail: builder.query<any, string>({
+      query: (id) => `/books/${id}`,
+      transformResponse: (response: any) => response.data,
+    }),
+    getBookById: builder.query<any, string>({
+      query: (id) => `/books/${id}`,
+      transformResponse: (response: { status: string; data: Book }) => response.data,
     }),
   }),
   tagTypes: ['AdminBlogs', 'PublicBlogs'],
@@ -372,4 +400,6 @@ export const {
   useCreateBookMutation,
   useGetAdminBooksQuery,
   useGetPublicBooksQuery,
+  useGetBookDetailQuery,
+  useGetBookByIdQuery,
 } = apiSlice;

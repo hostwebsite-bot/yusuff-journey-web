@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useGetBookByIdQuery } from '@/services/api/apiSlice';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -17,81 +18,15 @@ import {
   Calendar, 
   Star, 
   Share2, 
-  Download
+  Download,
+  Eye
 } from 'lucide-react';
-
-interface BookDetails {
-  id: string;
-  title: string;
-  shortTitle: string;
-  description: string;
-  fullDescription: string;
-  coverImage: string;
-  publishDate: string;
-  featured: boolean;
-  price: string;
-  categories: string[];
-  author: string;
-  pages: number;
-  language: string;
-  isbn: string;
-}
-
-const books: Record<string, BookDetails> = {
-  'jbgs': {
-    id: 'jbgs',
-    title: 'The Journey to Becoming a Great Student',
-    shortTitle: '#JBGS',
-    description: 'A comprehensive guide that offers insights on academic excellence, finance, entrepreneurship, and personal development for students at all levels.',
-    fullDescription: 'This comprehensive guide offers deep insights on academic excellence, finance, entrepreneurship, and personal development for students at all levels. Dr. Yusuff shares proven strategies for success in school and beyond, drawing from his own experiences and extensive research. The book provides practical tools that have helped thousands of students transform their academic outcomes and prepare for successful careers.',
-    coverImage: '/lovable-uploads/ac1830de-9ab7-4ac8-b7e3-93b41071cb14.png',
-    publishDate: '2022',
-    featured: true,
-    price: '$24.99',
-    categories: ['Academic Excellence', 'Financial Literacy', 'Personal Development'],
-    author: 'Dr. Awosanya Yusuff',
-    pages: 320,
-    language: 'English',
-    isbn: '978-1234567890'
-  },
-  'financial-wisdom': {
-    id: 'financial-wisdom',
-    title: 'Financial Wisdom for Young Professionals',
-    shortTitle: 'Financial Wisdom',
-    description: 'Essential financial knowledge for young adults entering the professional world, covering budgeting, investing, debt management, and building wealth early in your career.',
-    fullDescription: 'Essential financial knowledge for young adults entering the professional world, this guide covers budgeting, investing, debt management, and building wealth early in your career. Based on proven financial principles and updated for today\'s economic realities, this book gives young professionals the tools they need to make informed decisions about their financial futures from day one of their careers.',
-    coverImage: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
-    publishDate: '2024',
-    featured: false,
-    price: '$22.99',
-    categories: ['Finance', 'Career Development', 'Investing'],
-    author: 'Dr. Awosanya Yusuff',
-    pages: 280,
-    language: 'English',
-    isbn: '978-0987654321'
-  },
-  'entrepreneur-mindset': {
-    id: 'entrepreneur-mindset',
-    title: 'The Entrepreneur Mindset',
-    shortTitle: 'Entrepreneur Mindset',
-    description: 'Develop the thinking patterns and habits of successful entrepreneurs, regardless of your field or background. Learn to identify opportunities and solve problems creatively.',
-    fullDescription: 'Develop the thinking patterns and habits of successful entrepreneurs, regardless of your field or background. This book teaches readers how to identify opportunities and solve problems creatively, with practical exercises and real-world case studies. Dr. Yusuff draws on interviews with successful entrepreneurs and his own experience to provide actionable insights for aspiring business leaders.',
-    coverImage: 'https://images.unsplash.com/photo-1493612276216-ee3925520721?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
-    publishDate: '2023',
-    featured: false,
-    price: '$19.99',
-    categories: ['Entrepreneurship', 'Business', 'Innovation'],
-    author: 'Dr. Awosanya Yusuff',
-    pages: 246,
-    language: 'English',
-    isbn: '978-1357908642'
-  }
-};
 
 const BookDetail = () => {
   const { bookId } = useParams<{ bookId: string }>();
+  const { data: book, isLoading, error } = useGetBookByIdQuery(bookId);
   const { toast } = useToast();
-  const book = books[bookId || 'jbgs']; // Default to JBGS if no ID found
+  
   
   useEffect(() => {
     // Scroll to top when page loads
@@ -139,8 +74,25 @@ const BookDetail = () => {
       });
     }
   };
+  
 
-  if (!book) {
+
+  if (isLoading) {
+    return (
+      <>
+        <Navbar />
+        <div className="min-h-[60vh] flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-navy mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading book details...</p>
+          </div>
+        </div>
+        <Footer />
+      </>
+    );
+  }
+
+  if (error || !book) {
     return (
       <>
         <Navbar />
@@ -178,18 +130,18 @@ const BookDetail = () => {
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div className="animate-fade-in">
-                {book.featured && (
+                {book?.featured && (
                   <Badge className="bg-gold text-navy mb-4">Bestseller</Badge>
                 )}
                 <h1 className="text-4xl md:text-5xl font-montserrat font-bold text-navy mb-6">
-                  {book.title}
+                  {book?.title}
                 </h1>
                 <div className="flex items-center mb-8">
                   <div className="h-1 w-20 bg-gold mr-4"></div>
                   <span className="text-xl font-semibold text-navy-light">{book.shortTitle}</span>
                 </div>
                 <p className="text-lg text-gray-700 mb-8">
-                  {book.fullDescription}
+                  {book.description}
                 </p>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
@@ -199,7 +151,7 @@ const BookDetail = () => {
                   </div>
                   <div className="bg-navy/5 p-4 rounded-lg">
                     <p className="text-sm text-gray-500">Published</p>
-                    <p className="font-semibold">{book.publishDate}</p>
+                    <p className="font-semibold">{new Date(book.published).getFullYear()}</p>
                   </div>
                   <div className="bg-navy/5 p-4 rounded-lg">
                     <p className="text-sm text-gray-500">Pages</p>
@@ -207,24 +159,22 @@ const BookDetail = () => {
                   </div>
                   <div className="bg-navy/5 p-4 rounded-lg">
                     <p className="text-sm text-gray-500">Price</p>
-                    <p className="font-semibold">{book.price}</p>
+                    <p className="font-semibold">${book.price}</p>
                   </div>
                 </div>
 
-                <div className="flex flex-wrap gap-3 mb-8">
-                  {book.categories.map((category, index) => (
-                    <Badge key={index} variant="outline" className="border-navy text-navy">
-                      {category}
-                    </Badge>
-                  ))}
+                {/* Add views counter */}
+                <div className="flex items-center gap-2 mb-8 text-navy/70">
+                  <Eye size={20} />
+                  <span>{book.views} views</span>
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-4 mb-12">
                   <Button 
-                    onClick={() => scrollToSection('purchase')} 
+                    onClick={() => window.open(book.amazonLink, '_blank')}
                     className="bg-gold hover:bg-gold-dark text-navy font-bold px-8 py-6 text-lg h-auto"
                   >
-                    Purchase Now
+                    Purchase on Amazon
                   </Button>
                   <Button 
                     onClick={handleDownloadSample}
@@ -259,7 +209,9 @@ const BookDetail = () => {
                       <Calendar className="w-6 h-6 text-navy" />
                     </div>
                     <div>
-                      <p className="font-semibold text-navy">{book.publishDate}</p>
+                      <p className="font-semibold text-navy">
+                        {new Date(book?.published).getFullYear()}
+                      </p>
                       <p className="text-sm text-gray-600">Publication Year</p>
                     </div>
                   </div>
@@ -268,7 +220,7 @@ const BookDetail = () => {
                       <Star className="w-6 h-6 text-navy" />
                     </div>
                     <div>
-                      <p className="font-semibold text-navy">4.9/5 Rating</p>
+                      <p className="font-semibold text-navy">{book?.rating}/5 Rating</p>
                       <p className="text-sm text-gray-600">Global readers</p>
                     </div>
                   </div>
@@ -277,7 +229,13 @@ const BookDetail = () => {
 
               {/* Book Cover */}
               <div className="flex justify-center">
-                <BookCover />
+                <div className="relative w-72 h-96 md:w-80 md:h-112">
+                  <img 
+                    src={book.image}
+                    alt={book.title}
+                    className="w-full h-full object-cover rounded-lg shadow-2xl"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -407,7 +365,7 @@ const BookDetail = () => {
         </section>
 
         {/* Chapters Section */}
-        <section id="chapters" className="py-20 bg-gray-50">
+        {/* <section id="chapters" className="py-20 bg-gray-50">
           <div className="container mx-auto px-4">
             <h2 className="text-3xl md:text-4xl font-montserrat font-bold text-navy mb-12 text-center">
               <span className="gold-underline">What You'll Discover</span>
@@ -416,7 +374,7 @@ const BookDetail = () => {
               <BookAccordion />
             </div>
           </div>
-        </section>
+        </section> */}
 
         {/* Reviews Section */}
         <section className="py-20 bg-white">
@@ -460,7 +418,7 @@ const BookDetail = () => {
               <span className="gold-underline">Other Books You Might Enjoy</span>
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {Object.values(books)
+              {/* {Object.values(books)
                 .filter(relatedBook => relatedBook.id !== bookId)
                 .map(relatedBook => (
                   <div key={relatedBook.id} className="bg-navy/5 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
@@ -484,7 +442,7 @@ const BookDetail = () => {
                       </div>
                     </div>
                   </div>
-                ))}
+                ))} */}
             </div>
           </div>
         </section>
