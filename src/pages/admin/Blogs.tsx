@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from '@/components/ui/sonner';
-import { Plus, Edit, Trash2, ListOrdered, Hash, ListChecked } from "lucide-react";
+import { Plus, Edit, Trash2, ListOrdered, Hash, CheckSquare } from "lucide-react";
 import { BlogPost } from '@/services/api/apiSlice';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -458,7 +458,7 @@ const Blogs = () => {
                             
                             {block.type === 'list' && (
                               <div className="flex items-center gap-1">
-                                <ListChecked size={16} className="text-gray-500" />
+                                <CheckSquare size={16} className="text-gray-500" />
                                 <span className="text-sm text-gray-500">For bullet points, add each item on a new line</span>
                               </div>
                             )}
