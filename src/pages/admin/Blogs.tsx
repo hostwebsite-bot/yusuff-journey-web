@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from '@/components/ui/sonner';
 import { Plus, Edit, Trash2, ListOrdered, Hash, CheckSquare } from "lucide-react";
 import { 
-  BlogPost, 
+  
   useGetAdminBlogsQuery, 
   useCreateBlogMutation, 
   useUpdateBlogMutation,
@@ -33,43 +33,14 @@ const Blogs = () => {
   const [deleteBlog, { isLoading: isDeleting }] = useDeleteBlogPostMutation();
 
   const [open, setOpen] = useState(false);
-  const [editingBlog, setEditingBlog] = useState<BlogPost | null>(null);
+  const [editingBlog, setEditingBlog] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('basic');
   const [contentBlocks, setContentBlocks] = useState<ContentBlock[]>([
     { type: 'paragraph', content: '', id: '1' }
   ]);
   
   // Mock blog data that matches the structure on the main blog page
-  const [blogs, setBlogs] = useState<BlogPost[]>([
-    {
-      id: 'financial-habits-students',
-      title: 'The Impact of Financial Literacy on Academic Success',
-      author: "Dr. Awosanya Yusuff",
-      excerpt: "Exploring the often-overlooked connection between understanding personal finance and achieving academic excellence.",
-      content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit...",
-      category: "finance",
-      date: "May 10, 2025",
-      image: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-      readTime: "8 min read",
-      formattedContent: [
-        { type: 'heading', content: '1. Create and Stick to a Budget' },
-        { type: 'paragraph', content: 'A budget is your financial roadmap. Start by tracking all income sources, including allowances, part-time jobs, scholarships, or loans.' },
-        { type: 'heading', content: '2. Build an Emergency Fund' },
-        { type: 'paragraph', content: 'Life is unpredictable. An unexpected medical expense, laptop repair, or car breakdown can derail your financial stability.' },
-      ]
-    },
-    {
-      id: 'passion-purpose-education',
-      title: '5 Study Techniques That Actually Work, According to Science',
-      author: "Dr. Awosanya Yusuff",
-      excerpt: "Evidence-based approaches to studying that can dramatically improve retention and understanding of complex material.",
-      content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit...",
-      category: "education",
-      date: "May 3, 2025",
-      image: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-      readTime: "6 min read"
-    }
-  ]);
+  
 
   const [formData, setFormData] = useState<any>({
     id: "",
@@ -83,7 +54,7 @@ const Blogs = () => {
     readTime: ""
   });
 
-  const handleOpenDialog = (blog: BlogPost | null = null) => {
+  const handleOpenDialog = (blog:any | null = null) => {
     if (blog) {
       setFormData(blog);
       setEditingBlog(blog);

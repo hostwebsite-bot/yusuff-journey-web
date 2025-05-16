@@ -5,14 +5,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from '@/components/ui/sonner';
 import { Download, Send, Search, Mail, Trash2, ToggleLeft } from "lucide-react";
-import { useGetSubscribersQuery, useToggleSubscriberStatusMutation } from '@/services/api/apiSlice';
+import { useGetSubscribersQuery, useToggleSubscriberStatusMutation, useDeleteSubscribersMutation } from '@/services/api/apiSlice';
 
 const Subscribers = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [selectedIds, setSelectedIds] = useState<any>([]);
   
   const { data: subscribersData, isLoading, refetch } = useGetSubscribersQuery();
   const [toggleStatus] = useToggleSubscriberStatusMutation();
+  const [deleteSubscribers] = useDeleteSubscribersMutation();
 
   const handleToggleStatus = async (id: string) => {
     try {
@@ -37,7 +38,7 @@ const Subscribers = () => {
     }
   };
 
-  const handleSelectOne = (id: number) => {
+  const handleSelectOne = (id: any) => {
     if (selectedIds.includes(id)) {
       setSelectedIds(selectedIds.filter(selectedId => selectedId !== id));
     } else {
@@ -45,11 +46,15 @@ const Subscribers = () => {
     }
   };
 
-  const handleDelete = (ids: number[]) => {
+  const handleDelete = async (ids: string[]) => {
     if (confirm(`Are you sure you want to delete ${ids.length === 1 ? 'this subscriber' : 'these subscribers'}?`)) {
-      setSubscribers(subscribers.filter(sub => !ids.includes(sub.id)));
-      setSelectedIds([]);
-      toast.success(`${ids.length === 1 ? 'Subscriber' : ids.length + ' subscribers'} deleted successfully`);
+      try {
+        await deleteSubscribers(ids).unwrap();
+        setSelectedIds([]);
+        toast.success(`${ids.length === 1 ? 'Subscriber' : ids.length + ' subscribers'} deleted successfully`);
+      } catch (error) {
+        toast.error('Failed to delete subscribers');
+      }
     }
   };
 

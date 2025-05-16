@@ -155,6 +155,14 @@ export const apiSlice = createApi({
       query: () => '/newsletter/recent-subscribers',
       providesTags: ['Subscribers'],
     }),
+    deleteSubscribers: builder.mutation<{ status: string; message: string }, string[]>({
+      query: (ids) => ({
+        url: '/newsletter/subscribers',
+        method: 'DELETE',
+        body: { ids }
+      }),
+      invalidatesTags: ['Subscribers'],
+    }),
   }),
 });
 
@@ -181,4 +189,5 @@ export const {
   useGetBookDetailQuery,
   useGetBookByIdQuery,
   useGetRecentSubscribersQuery,
+  useDeleteSubscribersMutation,
 } = apiSlice;
