@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
+
 interface RecentSubscriber {
   email: string;
   date: string;
@@ -8,20 +9,6 @@ interface RecentSubscriber {
 interface RecentSubscribersResponse {
   status: string;
   data: RecentSubscriber[];
-}
-
-export interface BlogPost {
-  _id: string;
-  title: string;
-  content: string;
-  excerpt: string;
-  author: string;
-  category: string;
-  tags: string[];
-  image: string;
-  publishDate: string;
-  readTime: string;
-  status: 'draft' | 'published';
 }
 
 export const apiSlice = createApi({
