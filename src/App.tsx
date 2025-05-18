@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,6 +14,7 @@ import Books from "./pages/Books";
 import NotFound from "./pages/NotFound";
 import BookDetail from "./pages/BookDetail";
 import BlogPost from "./pages/BlogPost";
+import PaymentCallback from "@/pages/PaymentCallback";
 
 // Admin routes
 import Login from "./pages/admin/Login";
@@ -49,6 +49,7 @@ const App = () => (
           <Route path="/books" element={<Books />} />
           <Route path="/books/:bookId" element={<BookDetail />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/payment/verify" element={<PaymentCallback />} />
           
           {/* Admin routes - not visible in navigation */}
           <Route path="/admin" element={<Login />} />

@@ -140,6 +140,22 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ['Books']
     }),
+    createBookData: builder.mutation<any, any>({
+      query: (data) => ({
+        url: '/books',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['Books'],
+    }),
+    uploadBookFiles: builder.mutation<any, any>({
+      query: ({ id, formData }) => ({
+        url: `/books/${id}`,
+        method: 'PATCH',
+        body: formData,
+      }),
+      invalidatesTags: ['Books'],
+    }),
     getAdminBooks: builder.query<any, void>({
       query: () => '/admin/books',
     }),
@@ -196,7 +212,7 @@ export const apiSlice = createApi({
       query: (transactionId) => ({
         url: `/payment/verify`,
         method: 'GET',
-        params: { transaction_id: transactionId },
+        params: { reference: transactionId },
       }),
     }),
   }),
@@ -214,7 +230,8 @@ export const {
   useGetBlogsQuery,
   useCreateBlogMutation,
   useUpdateBlogMutation,
-  
+  useCreateBookDataMutation,
+  useUploadBookFilesMutation,
   useGetAdminBlogsQuery,
   useGetPublicBlogsQuery,
   useDeleteBlogPostMutation,
