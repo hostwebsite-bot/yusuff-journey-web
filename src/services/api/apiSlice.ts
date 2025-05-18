@@ -1,12 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 
-interface RecentSubscriber {
-  email: string;
-  date: string;
-}
-
-
 
 
 
@@ -173,6 +167,13 @@ export const apiSlice = createApi({
       query: () => '/admin/dashboard',
       providesTags: ['Books', 'AdminBlogs', 'Subscribers'],
     }),
+    sendNewsletter: builder.mutation<any, any>({
+      query: (data) => ({
+        url: '/newsletter/send',
+        method: 'POST',
+        body: data,
+      }),
+    }),
   }),
 });
 
@@ -202,4 +203,5 @@ export const {
   useDeleteSubscribersMutation,
   useUpdateProfilePictureMutation,
   useGetDashboardStatsQuery,
+  useSendNewsletterMutation,
 } = apiSlice;

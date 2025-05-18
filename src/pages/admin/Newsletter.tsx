@@ -5,7 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from '@/components/ui/sonner';
 import { Send, Users } from "lucide-react";
-import { useGetNewsletterStatsQuery } from '@/services/api/apiSlice';
+import { useGetNewsletterStatsQuery, useSendNewsletterMutation } from '@/services/api/apiSlice';
 
 const Newsletter = () => {
   const [formData, setFormData] = useState({
@@ -16,6 +16,7 @@ const Newsletter = () => {
   });
 
   const { data: stats, isLoading: isLoadingStats } = useGetNewsletterStatsQuery();
+  const [sendNewsletter, { isLoading: isSending }] = useSendNewsletterMutation();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -32,19 +33,28 @@ const Newsletter = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // In a real app, this would send the newsletter
-    toast.success(`Newsletter "${formData.subject}" has been queued for delivery to ${formData.sendToAll ? stats?.data.totalSubscribers : stats?.data.activeSubscribers} recipients`);
-    
-    // Reset form
-    setFormData({
-      subject: "",
-      previewText: "",
-      content: "",
-      sendToAll: true,
-    });
+    try {
+      const response = await sendNewsletter({
+        subject: formData.subject,
+        previewText: formData.previewText,
+        content: formData.content,
+      }).unwrap();
+
+      toast.success(response.message);
+      
+      // Reset form
+      setFormData({
+        subject: "",
+        previewText: "",
+        content: "",
+        sendToAll: true,
+      });
+    } catch (error: any) {
+      toast.error(error.data?.message || 'Failed to send newsletter');
+    }
   };
 
   return (
@@ -119,9 +129,10 @@ const Newsletter = () => {
                 <Button 
                   type="submit" 
                   className="w-full sm:w-auto"
+                  disabled={isSending}
                 >
                   <Send size={18} className="mr-2" />
-                  Send Newsletter
+                  {isSending ? 'Sending...' : 'Send Newsletter'}
                 </Button>
               </form>
             </CardContent>
