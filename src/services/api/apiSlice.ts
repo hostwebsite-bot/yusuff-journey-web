@@ -1,8 +1,19 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
+interface PaymentResponse {
+  status: string;
+  data: {
+    paymentLink: string;
+  };
+}
 
-
-
+interface VerifyPaymentResponse {
+  status: string;
+  data: {
+    status: string;
+    // Add other verification response fields as needed
+  };
+}
 
 export const apiSlice = createApi({
   reducerPath: 'api',
@@ -174,6 +185,20 @@ export const apiSlice = createApi({
         body: data,
       }),
     }),
+    initiateBookPayment: builder.mutation<PaymentResponse, { bookId: string; email: string }>({
+      query: ({ bookId, email }) => ({
+        url: `/payment/books/${bookId}/pay`,
+        method: 'POST',
+        body: { email },
+      }),
+    }),
+    verifyPayment: builder.mutation<VerifyPaymentResponse, string>({
+      query: (transactionId) => ({
+        url: `/payment/verify`,
+        method: 'GET',
+        params: { transaction_id: transactionId },
+      }),
+    }),
   }),
 });
 
@@ -204,4 +229,6 @@ export const {
   useUpdateProfilePictureMutation,
   useGetDashboardStatsQuery,
   useSendNewsletterMutation,
+  useInitiateBookPaymentMutation,
+  useVerifyPaymentMutation,
 } = apiSlice;

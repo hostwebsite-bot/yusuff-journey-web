@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useGetBookByIdQuery } from '@/services/api/apiSlice';
+import { useGetBookByIdQuery, useInitiateBookPaymentMutation, useVerifyPaymentMutation } from '@/services/api/apiSlice';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -21,13 +21,28 @@ import {
   Download,
   Eye
 } from 'lucide-react';
+import { initializeFlutterwavePayment } from '@/services/payment/paymentService';
+import { 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { AlertDialog, AlertDialogContent, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter } from "@/components/ui/alert-dialog";
 
 const BookDetail = () => {
   const { bookId } = useParams<{ bookId: string }>();
   const { data: book, isLoading, error } = useGetBookByIdQuery(bookId);
   const { toast } = useToast();
-  
-  
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showPaymentMethodModal, setShowPaymentMethodModal] = useState(false);
+  const [paymentEmail, setPaymentEmail] = useState('');
+  const [initiatePayment] = useInitiateBookPaymentMutation();
+  const [verifyPayment] = useVerifyPaymentMutation();
+
   useEffect(() => {
     // Scroll to top when page loads
     window.scrollTo(0, 0);
@@ -74,8 +89,74 @@ const BookDetail = () => {
       });
     }
   };
-  
 
+  const handlePurchase = () => {
+    setShowPaymentMethodModal(true);
+  };
+
+  const handlePaymentMethodSelect = (method: 'amazon' | 'flutterwave') => {
+    setShowPaymentMethodModal(false);
+    if (method === 'amazon') {
+      window.open(book.amazonLink, '_blank');
+    } else {
+      setShowPaymentModal(true);
+    }
+  };
+
+  const handlePayment = async (email: string) => {
+    try {
+      const response = await initiatePayment({ 
+        bookId: bookId || '', 
+        email 
+      }).unwrap();
+      console.log(response, "response", bookId, email);
+      
+      window.location.href = response.data.paymentLink;
+    } catch (error) {
+      console.log(error)
+      toast({
+        title: "Error",
+        description: "Failed to initialize payment",
+        variant: "destructive",
+      });
+      setShowPaymentModal(false);
+    }
+  };
+
+  // Handle payment verification
+  useEffect(() => {
+    const verifyPaymentStatus = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const transactionId = params.get('transaction_id');
+
+      if (transactionId) {
+        try {
+          const response = await verifyPayment(transactionId).unwrap();
+          if (response.status === 'success') {
+            toast({
+              title: "Success",
+              description: "Payment successful!",
+              variant: "default",
+            });
+          } else {
+            toast({
+              title: "Error",
+              description: "Payment verification failed",
+              variant: "destructive",
+            });
+          }
+        } catch (error) {
+          toast({
+            title: "Error",
+            description: "Failed to verify payment",
+            variant: "destructive",
+          });
+        }
+      }
+    };
+
+    verifyPaymentStatus();
+  }, []);
 
   if (isLoading) {
     return (
@@ -171,10 +252,10 @@ const BookDetail = () => {
 
                 <div className="flex flex-col sm:flex-row gap-4 mb-12">
                   <Button 
-                    onClick={() => window.open(book.amazonLink, '_blank')}
+                    onClick={handlePurchase}
                     className="bg-gold hover:bg-gold-dark text-navy font-bold px-8 py-6 text-lg h-auto"
                   >
-                    Purchase on Amazon
+                    {book.amazonLink ? 'Purchase on Amazon' : 'Purchase Now'}
                   </Button>
                   <Button 
                     onClick={handleDownloadSample}
@@ -448,6 +529,79 @@ const BookDetail = () => {
         </section>
       </main>
       <Footer />
+
+      {/* Payment Method Selection Modal */}
+      <AlertDialog open={showPaymentMethodModal} onOpenChange={setShowPaymentMethodModal}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogTitle>Choose Payment Method</AlertDialogTitle>
+          <AlertDialogDescription>
+            Select your preferred payment method to purchase {book?.title}
+          </AlertDialogDescription>
+          <div className="grid grid-cols-2 gap-4 my-6">
+            <Button
+              onClick={() => handlePaymentMethodSelect('amazon')}
+              variant="outline"
+              className="h-auto py-6 flex flex-col items-center gap-2"
+              disabled={!book?.amazonLink}
+            >
+              <img 
+                src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Amazon_icon.svg" 
+                alt="Amazon" 
+                className="w-8 h-8" 
+              />
+              <span>Amazon</span>
+            </Button>
+            <Button
+              onClick={() => handlePaymentMethodSelect('flutterwave')}
+              variant="outline"
+              className="h-auto py-6 flex flex-col items-center gap-2"
+            >
+              <img 
+                src="https://cdn.filestackcontent.com/OITnhSPCSzOuiVvwnH7r" 
+                alt="Flutterwave" 
+                className="w-8 h-8" 
+              />
+              <span>Card/Bank Transfer</span>
+            </Button>
+          </div>
+          <AlertDialogFooter>
+            <Button variant="ghost" onClick={() => setShowPaymentMethodModal(false)}>
+              Cancel
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Payment Modal */}
+      <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Purchase {book?.title}</DialogTitle>
+            <DialogDescription>
+              Enter your email to continue with payment
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Input
+              type="email"
+              placeholder="Enter your email"
+              value={paymentEmail}
+              onChange={(e) => setPaymentEmail(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setShowPaymentModal(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={() => handlePayment(paymentEmail)}
+              disabled={!paymentEmail || !paymentEmail.includes('@')}
+            >
+              Continue to Payment
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
