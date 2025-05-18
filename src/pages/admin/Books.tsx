@@ -53,6 +53,7 @@ const Books = () => {
     globalReaders: "",
     publicationYear: new Date().getFullYear().toString(),
     amazonLink: "",
+    pdfFile: null,
   });
 
   const [categoryInput, setCategoryInput] = useState("");
@@ -79,6 +80,7 @@ const Books = () => {
         globalReaders: "",
         publicationYear: new Date().getFullYear().toString(),
         amazonLink: "",
+        pdfFile: null,
       });
       setEditingBook(null);
     }
@@ -113,6 +115,17 @@ const Books = () => {
     }));
   };
 
+  // Add PDF file handling function
+  const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFormData(prev => ({
+        ...prev,
+        pdfFile: file
+      }));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -121,7 +134,7 @@ const Books = () => {
     
     // Add all text fields
     Object.keys(formData).forEach(key => {
-      if (key !== 'image' && formData[key] !== undefined) {
+      if (key !== 'image' && key !== 'pdfFile' && formData[key] !== undefined) {
         if (key === 'categories') {
           submitFormData.append(key, JSON.stringify(formData[key]));
         } else {
@@ -133,6 +146,11 @@ const Books = () => {
     // Handle image file if it's a File object
     if (formData.image instanceof File) {
       submitFormData.append('image', formData.image);
+    }
+
+    // Add PDF file if exists
+    if (formData.pdfFile instanceof File) {
+      submitFormData.append('pdfFile', formData.pdfFile);
     }
     
     try {
@@ -463,6 +481,24 @@ const Books = () => {
                     Add
                   </Button>
                 </div>
+              </div>
+
+              {/* Add PDF file field */}
+              <div className="space-y-2">
+                <label htmlFor="pdfFile" className="text-sm font-medium">Book PDF</label>
+                <Input
+                  id="pdfFile"
+                  name="pdfFile"
+                  type="file"
+                  accept=".pdf"
+                  onChange={handlePdfChange}
+                  className="flex-1"
+                />
+                {formData.pdfFile && (
+                  <p className="text-sm text-gray-500 mt-1">
+                    Selected file: {formData.pdfFile.name}
+                  </p>
+                )}
               </div>
             </div>
             
