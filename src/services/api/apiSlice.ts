@@ -6,10 +6,9 @@ interface RecentSubscriber {
   date: string;
 }
 
-interface RecentSubscribersResponse {
-  status: string;
-  data: RecentSubscriber[];
-}
+
+
+
 
 export const apiSlice = createApi({
   reducerPath: 'api',
@@ -151,7 +150,7 @@ export const apiSlice = createApi({
       query: (id) => `/books/${id}`,
       transformResponse: (response: { status: string; data: any }) => response.data,
     }),
-    getRecentSubscribers: builder.query<RecentSubscribersResponse, void>({
+    getRecentSubscribers: builder.query<any, void>({
       query: () => '/newsletter/recent-subscribers',
       providesTags: ['Subscribers'],
     }),
@@ -169,6 +168,10 @@ export const apiSlice = createApi({
         method: 'PUT',
         body: formData,
       }),
+    }),
+    getDashboardStats: builder.query<any, void>({
+      query: () => '/admin/dashboard',
+      providesTags: ['Books', 'AdminBlogs', 'Subscribers'],
     }),
   }),
 });
@@ -198,4 +201,5 @@ export const {
   useGetRecentSubscribersQuery,
   useDeleteSubscribersMutation,
   useUpdateProfilePictureMutation,
+  useGetDashboardStatsQuery,
 } = apiSlice;
