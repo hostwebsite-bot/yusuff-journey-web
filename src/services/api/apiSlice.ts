@@ -18,7 +18,8 @@ interface VerifyPaymentResponse {
 export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({ 
-    baseUrl: 'https://yusuff-i94b.onrender.com/api',
+    // baseUrl: 'https://yusuff-i94b.onrender.com/api',
+    baseUrl: 'http://localhost:3002/api',
     prepareHeaders: (headers, { getState }) => {
       const token = (getState() as any).auth.token;
       if (token) {
@@ -208,7 +209,7 @@ export const apiSlice = createApi({
         body: { email },
       }),
     }),
-    verifyPayment: builder.mutation<VerifyPaymentResponse, string>({
+    verifyPayment: builder.mutation<any, any>({
       query: (transactionId) => ({
         url: `/payment/verify`,
         method: 'GET',

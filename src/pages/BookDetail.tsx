@@ -40,8 +40,8 @@ const BookDetail = () => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showPaymentMethodModal, setShowPaymentMethodModal] = useState(false);
   const [paymentEmail, setPaymentEmail] = useState('');
-  const [initiatePayment] = useInitiateBookPaymentMutation();
-  const [verifyPayment] = useVerifyPaymentMutation();
+  const [initiatePayment, { isLoading: isInitiatingPayment }] = useInitiateBookPaymentMutation();
+  const [verifyPayment, { isLoading: isVerifyingPayment }] = useVerifyPaymentMutation();
 
   useEffect(() => {
     // Scroll to top when page loads
@@ -105,15 +105,17 @@ const BookDetail = () => {
 
   const handlePayment = async (email: string) => {
     try {
+      if (isInitiatingPayment) return;
+
       const response = await initiatePayment({ 
         bookId: bookId || '', 
         email 
       }).unwrap();
-      console.log(response, "response", bookId, email);
       
-      window.location.href = response.data.paymentLink;
+      // Open payment link in new tab
+      window.open(response.data.paymentLink, '_blank');
+      setShowPaymentModal(false);
     } catch (error) {
-      console.log(error)
       toast({
         title: "Error",
         description: "Failed to initialize payment",
@@ -596,9 +598,9 @@ const BookDetail = () => {
             </Button>
             <Button 
               onClick={() => handlePayment(paymentEmail)}
-              disabled={!paymentEmail || !paymentEmail.includes('@')}
+              disabled={!paymentEmail || !paymentEmail.includes('@') || isInitiatingPayment}
             >
-              Continue to Payment
+              {isInitiatingPayment ? 'Processing...' : 'Continue to Payment'}
             </Button>
           </DialogFooter>
         </DialogContent>

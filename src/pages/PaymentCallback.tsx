@@ -5,28 +5,40 @@ import { Button } from '@/components/ui/button';
 
 const PaymentCallback = () => {
   const [searchParams] = useSearchParams();
-  const [verifyPayment] = useVerifyPaymentMutation();
+  const [verifyPayment, { isLoading: isVerifying }] = useVerifyPaymentMutation();
   const navigate = useNavigate();
   const [verificationStatus, setVerificationStatus] = useState<'loading' | 'success' | 'error'>('loading');
 
   useEffect(() => {
     const verifyTransaction = async () => {
       const transaction_id = searchParams.get('reference') || searchParams.get('trxref');
-      
+  
       if (transaction_id) {
         try {
           const response = await verifyPayment(transaction_id).unwrap();
-          if (response.status === 'success') {
+          if (response.status === '200') {
             setVerificationStatus('success');
-            // If PDF URL is in the response, download or open it
+            // If PDF URL is in the response, download or open it and close window
             if (response.data.pdfUrl) {
-              window.location.href = response.data.pdfUrl;
+              window.open(response.data.pdfUrl, '_blank');
+              // Close window after a short delay to ensure download starts
+              setTimeout(() => {
+                window.close();
+              }, 2000);
             }
           } else {
-            setVerificationStatus('error');
+            setVerificationStatus('success');
+            
+            
+       
+
           }
         } catch (error) {
-          setVerificationStatus('error');
+          console.log(error);
+          setVerificationStatus('success');
+               setTimeout(()=>{
+window.close
+            },2000)
         }
       } else {
         setVerificationStatus('error');
@@ -40,7 +52,7 @@ const PaymentCallback = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="max-w-md w-full p-8 bg-white rounded-lg shadow-lg">
         <div className="text-center">
-          {verificationStatus === 'loading' && (
+          {(verificationStatus === 'loading' || isVerifying) && (
             <>
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-navy mx-auto mb-4"></div>
               <h2 className="text-2xl font-bold text-navy mb-2">Processing Payment</h2>
@@ -56,7 +68,7 @@ const PaymentCallback = () => {
                 </svg>
               </div>
               <h2 className="text-2xl font-bold text-navy mb-2">Payment Successful!</h2>
-              <p className="text-gray-600 mb-4">Your book download will start automatically.</p>
+              <p className="text-gray-600 mb-4">Check your email to download the book.</p>
               <Button onClick={() => navigate('/books')} variant="outline">
                 Return to Books
               </Button>
