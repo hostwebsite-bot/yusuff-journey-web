@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from '@/components/ui/sonner';
 import { Plus, Edit, Trash2 } from "lucide-react";
-import { useGetAdminBooksQuery, useCreateBookDataMutation, useUploadBookFilesMutation } from '@/services/api/apiSlice';
+import { useGetAdminBooksQuery, useCreateBookDataMutation, useUploadBookFilesMutation, useDeleteBookMutation } from '@/services/api/apiSlice';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter } from "@/components/ui/alert-dialog";
 
 // Book interface to match with the public pages
@@ -31,9 +31,10 @@ interface Book {
 }
 
 const Books = () => {
-  const { data: booksData, isLoading } = useGetAdminBooksQuery();
-  const [createBookData] = useCreateBookDataMutation();
-  const [uploadBookFiles] = useUploadBookFilesMutation();
+  const { data: booksData, isLoading: isBooksLoading } = useGetAdminBooksQuery();
+  const [createBookData, { isLoading: isCreatingBook }] = useCreateBookDataMutation();
+  const [uploadBookFiles, { isLoading: isUploadingFiles }] = useUploadBookFilesMutation();
+  const [deleteBook, { isLoading: isDeleting }] = useDeleteBookMutation();
   const [open, setOpen] = useState(false);
   const [editingBook, setEditingBook] = useState<Book | null>(null);
   const [showFileUpload, setShowFileUpload] = useState(false);
@@ -134,13 +135,16 @@ const Books = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (isCreatingBook) return;
+
     try {
-      // First stage only validates required text fields
+      // First stage validation - only text fields
       const requiredFields = ['title', 'subtitle', 'author', 'description', 'price', 'published'];
       const missingFields = requiredFields.filter(field => !formData[field]);
       
       if (missingFields.length > 0) {
-        toast.error(`Please fill in all required fields`);
+        const fieldNames = missingFields.map(f => f.charAt(0).toUpperCase() + f.slice(1)).join(', ');
+        toast.error(`Please fill in required fields: ${fieldNames}`);
         return;
       }
 
@@ -166,7 +170,7 @@ const Books = () => {
       setNewBookId(response.data._id);
       setOpen(false);
       setShowFileUpload(true);
-      toast.success('Book details saved. Please upload files in the next step.');
+      toast.success('Book details saved. Please upload the required files.');
     } catch (error: any) {
       toast.error(error.data?.message || 'Failed to create book');
     }
@@ -176,9 +180,32 @@ const Books = () => {
   const handleFileUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // File validation only happens in second stage
-    if (!formData.image || !formData.pdfFile) {
-      toast.error('Both book cover image and PDF file are required');
+    if (isUploadingFiles) return;
+
+    // Second stage validation - file uploads only
+    if (!formData.image && !formData.pdfFile) {
+      toast.error('Please select both book cover image and PDF file');
+      return;
+    }
+    
+    if (!formData.image) {
+      toast.error('Please select a book cover image');
+      return;
+    }
+
+    if (!formData.pdfFile) {
+      toast.error('Please select a PDF file for the book');
+      return;
+    }
+
+    // Validate file types
+    if (formData.image && !formData.image.type.startsWith('image/')) {
+      toast.error('Please select a valid image file for book cover');
+      return;
+    }
+
+    if (formData.pdfFile && !formData.pdfFile.type.startsWith('application/pdf')) {
+      toast.error('Please select a valid PDF file');
       return;
     }
 
@@ -195,11 +222,11 @@ const Books = () => {
       toast.success('Book created successfully');
       setShowFileUpload(false);
       setNewBookId(null);
-      setFormData({
-        ...formData,
+      setFormData(prev => ({
+        ...prev,
         image: '',
         pdfFile: null
-      });
+      }));
     } catch (error: any) {
       toast.error(error.data?.message || 'Failed to upload files');
     }
@@ -216,10 +243,14 @@ const Books = () => {
     }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this book?")) {
-      // setBooks(books.filter(book => book.id !== id));
-      toast.success("Book has been deleted");
+      try {
+        await deleteBook(id).unwrap();
+        toast.success("Book has been deleted successfully");
+      } catch (error: any) {
+        toast.error(error.data?.message || 'Failed to delete book');
+      }
     }
   };
 
@@ -248,7 +279,7 @@ const Books = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {isLoading ? (
+              {isBooksLoading ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-8">
                     Loading books...
@@ -283,9 +314,9 @@ const Books = () => {
                         variant="ghost" 
                         size="sm" 
                         onClick={() => handleDelete(book._id)}
-                        disabled={isLoading}
+                        disabled={isDeleting}
                       >
-                        <Trash2 size={16} />
+                        {isDeleting ? "Deleting..." : <Trash2 size={16} />}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -504,8 +535,8 @@ const Books = () => {
                 <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit">
-                  Next: Upload Files →
+                <Button type="submit" disabled={isCreatingBook}>
+                  {isCreatingBook ? "Creating..." : "Next: Upload Files →"}
                 </Button>
               </DialogFooter>
             </form>
@@ -565,8 +596,8 @@ const Books = () => {
                 <Button type="button" variant="outline" onClick={() => setShowFileUpload(false)}>
                   Cancel
                 </Button>
-                <Button type="submit">
-                  Finish: Complete Book Creation
+                <Button type="submit" disabled={isUploadingFiles}>
+                  {isUploadingFiles ? "Uploading..." : "Finish: Complete Book Creation"}
                 </Button>
               </AlertDialogFooter>
             </form>

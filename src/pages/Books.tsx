@@ -146,19 +146,12 @@ const Books = () => {
                       ))}
                     </div>
                     <div className="flex gap-3">
-                      <Link to={`/books/${book._id}`} className="flex-1">
+                      <Link to={`/books/${book._id}`} className="w-full">
                         <Button className="w-full bg-navy hover:bg-navy-light text-white">
                           <BookOpen className="mr-2 h-4 w-4" />
-                          Details
+                          View Details
                         </Button>
                       </Link>
-                      <Button 
-                        variant="outline" 
-                        className="flex-1 border-navy text-navy hover:bg-navy/10"
-                        onClick={() => window.open(book.amazonLink, '_blank')}
-                      >
-                        Buy Now
-                      </Button>
                     </div>
                   </CardContent>
                 </Card>

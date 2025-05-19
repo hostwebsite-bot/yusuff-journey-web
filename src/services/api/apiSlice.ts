@@ -215,6 +215,13 @@ export const apiSlice = createApi({
         params: { reference: transactionId },
       }),
     }),
+    deleteBook: builder.mutation<{ status: string; message: string }, string>({
+      query: (id) => ({
+        url: `/books/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Books'],
+    }),
   }),
 });
 
@@ -248,4 +255,5 @@ export const {
   useSendNewsletterMutation,
   useInitiateBookPaymentMutation,
   useVerifyPaymentMutation,
+  useDeleteBookMutation,
 } = apiSlice;

@@ -94,7 +94,7 @@ const BookDetail = () => {
     setShowPaymentMethodModal(true);
   };
 
-  const handlePaymentMethodSelect = (method: 'amazon' | 'flutterwave') => {
+  const handlePaymentMethodSelect = (method: 'amazon' | 'paystack') => {
     setShowPaymentMethodModal(false);
     if (method === 'amazon') {
       window.open(book.amazonLink, '_blank');
@@ -551,17 +551,18 @@ const BookDetail = () => {
               />
               <span>Amazon</span>
             </Button>
+           
             <Button
-              onClick={() => handlePaymentMethodSelect('flutterwave')}
+              onClick={() => handlePaymentMethodSelect('paystack')}
               variant="outline"
               className="h-auto py-6 flex flex-col items-center gap-2"
             >
               <img 
-                src="https://cdn.filestackcontent.com/OITnhSPCSzOuiVvwnH7r" 
-                alt="Flutterwave" 
+                src="https://website-v3-assets.s3.amazonaws.com/assets/img/hero/Paystack-mark-white-twitter.png" 
+                alt="Paystack" 
                 className="w-8 h-8" 
               />
-              <span>Card/Bank Transfer</span>
+              <span>Pay with Paystack</span>
             </Button>
           </div>
           <AlertDialogFooter>
