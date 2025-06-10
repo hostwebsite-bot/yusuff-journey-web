@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { useSubscribeNewsletterMutation } from '@/services/api/apiSlice';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
+import ScrollToTop from '@/components/ScrollToTop';
 
 const Index = () => {
   const [newsletterEmail, setNewsletterEmail] = useState('');
@@ -155,6 +156,7 @@ const Index = () => {
       </section>
       
       <Footer />
+      <ScrollToTop />
     </div>
   );
 };

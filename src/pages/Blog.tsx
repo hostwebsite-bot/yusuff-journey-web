@@ -9,6 +9,7 @@ import { Link } from 'react-router-dom';
 import { useGetPublicBlogsQuery, useSubscribeNewsletterMutation } from '@/services/api/apiSlice';
 import { toast } from 'sonner';
 import { formatDate } from '@/utils/formatDate';
+import ScrollToTop from '@/components/ScrollToTop';
 
 const Blog = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -209,6 +210,7 @@ const Blog = () => {
       </section>
 
       <Footer />
+      <ScrollToTop />
     </div>
   );
 };

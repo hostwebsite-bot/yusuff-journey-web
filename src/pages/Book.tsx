@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BookCover } from '@/components/BookCover';
 import { BookAccordion } from '@/components/BookAccordion';
@@ -9,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { ChevronDown } from 'lucide-react';
+import ScrollToTop from '@/components/ScrollToTop';
 
 const Book = () => {
   const scrollToSection = (id: string) => {
@@ -19,7 +19,7 @@ const Book = () => {
   };
 
   return (
-    <>
+    <div className="min-h-screen">
       <Navbar />
       <main className="pt-20">
         {/* Hero Section */}
@@ -193,7 +193,8 @@ const Book = () => {
         </section>
       </main>
       <Footer />
-    </>
+      <ScrollToTop />
+    </div>
   );
 };
 
