@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -18,26 +17,18 @@ const Index = () => {
 
   const handleNewsletterSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!newsletterEmail) {
-      toast.error('Please enter your email address');
-      return;
-    }
-    
     try {
-      const response = await subscribeNewsletter({ email: newsletterEmail }).unwrap();
-      toast.success(response.message || 'Successfully subscribed to newsletter');
+      await subscribeNewsletter({ email: newsletterEmail }).unwrap();
+      toast.success('Successfully subscribed to newsletter!');
       setNewsletterEmail('');
-    } catch (error: any) {
-      toast.error(error.data?.message || 'Failed to subscribe to newsletter. Please try again later.');
+    } catch (error) {
+      toast.error('Failed to subscribe. Please try again.');
     }
   };
 
   return (
     <div className="min-h-screen">
       <Navbar />
-      
-      {/* Enhanced Hero Section */}
       <EnhancedHero />
 
       {/* Enhanced Accolades Banner */}
