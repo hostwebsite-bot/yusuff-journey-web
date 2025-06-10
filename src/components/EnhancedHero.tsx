@@ -1,85 +1,83 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 
 const EnhancedHero = () => {
   return (
-    <section className="relative pt-32 pb-16 md:pt-40 md:pb-24 overflow-hidden">
-      {/* Animated Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-navy/5 via-white to-gold/5">
-        <div className="absolute inset-0 hero-pattern opacity-40"></div>
-        {/* Floating elements */}
-        <div className="absolute top-20 left-10 w-20 h-20 bg-gold/20 rounded-full blur-xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-32 h-32 bg-navy/10 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-gold/15 rounded-full blur-lg animate-pulse" style={{ animationDelay: '2s' }}></div>
+    <section className="relative min-h-screen pt-32 pb-16 md:pt-40 md:pb-24 overflow-hidden">
+      {/* Background Video */}
+      <div className="absolute inset-0 w-full h-full">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="object-cover w-full h-full"
+        >
+          <source src="video.mp4" type="video/mp4" />
+        </video>
+        {/* Overlay gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-navy/80 via-navy/70 to-black/80 mix-blend-multiply"></div>
+        
+        {/* Enhanced floating elements */}
+        <div className="absolute inset-0">
+          <div className="absolute top-20 left-10 w-32 h-32 bg-gold/30 rounded-full blur-3xl animate-float"></div>
+          <div className="absolute bottom-20 right-10 w-40 h-40 bg-navy/30 rounded-full blur-3xl animate-float-delayed"></div>
+          <div className="absolute top-1/2 left-1/4 w-24 h-24 bg-white/20 rounded-full blur-2xl animate-pulse"></div>
+        </div>
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="text-center lg:text-left space-y-8">
-            {/* Main heading with enhanced typography */}
+            {/* Updated text colors and effects */}
             <div className="space-y-4">
-              <h1 className="font-montserrat font-extrabold text-navy leading-tight">
-                <span className="block text-5xl md:text-6xl lg:text-7xl mb-2 animate-fade-in">
+              <h1 className="font-montserrat font-extrabold text-white leading-tight">
+                <span className="block text-5xl md:text-6xl lg:text-7xl mb-2 animate-fade-in backdrop-blur-sm">
                   Dr. Awosanya
                 </span>
-                <span className="block text-4xl md:text-5xl lg:text-6xl bg-gradient-to-r from-navy via-navy-light to-gold bg-clip-text text-transparent animate-slide-up" style={{ animationDelay: '0.2s' }}>
+                <span className="block text-4xl md:text-5xl lg:text-6xl bg-gradient-to-r from-white via-gold to-white bg-clip-text text-transparent animate-slide-up" style={{ animationDelay: '0.2s' }}>
                   Yusuff
                 </span>
               </h1>
               
-              {/* Enhanced subtitle */}
-              <div className="relative">
-                <h2 className="text-xl md:text-2xl lg:text-3xl font-montserrat font-medium text-gray-700 animate-slide-up" style={{ animationDelay: '0.4s' }}>
-                  <span className="relative">
-                    Finance Professional
-                    <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-gold to-transparent"></span>
-                  </span>
-                  <span className="mx-2 text-gold">•</span>
-                  <span className="relative">
-                    Entrepreneur
-                    <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-navy to-transparent"></span>
-                  </span>
-                  <span className="mx-2 text-gold">•</span>
-                  <span className="relative">
-                    Author
-                    <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-gold to-transparent"></span>
-                  </span>
-                </h2>
-              </div>
+              <h2 className="text-xl md:text-2xl lg:text-3xl font-montserrat font-medium text-white/90 animate-slide-up" style={{ animationDelay: '0.4s' }}>
+                <span className="relative inline-block px-2 py-1 bg-white/10 backdrop-blur-sm rounded-lg">
+                  Finance Professional
+                </span>
+                <span className="mx-2 text-gold">•</span>
+                <span className="relative inline-block px-2 py-1 bg-white/10 backdrop-blur-sm rounded-lg">
+                  Entrepreneur
+                </span>
+                <span className="mx-2 text-gold">•</span>
+                <span className="relative inline-block px-2 py-1 bg-white/10 backdrop-blur-sm rounded-lg">
+                  Author
+                </span>
+              </h2>
             </div>
 
-            {/* Enhanced description */}
-            <div className="space-y-6 animate-slide-up" style={{ animationDelay: '0.6s' }}>
-              <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-                Empowering individuals with 
-                <span className="font-semibold text-navy"> financial literacy</span>, 
-                <span className="font-semibold text-navy"> academic excellence</span>, and 
-                <span className="font-semibold text-navy"> personal development</span> through my bestselling book.
-              </p>
-              
-              <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-gold/10 to-navy/10 px-4 py-2 rounded-full border border-gold/20">
-                <span className="text-sm font-medium text-navy">Featured:</span>
-                <span className="text-sm italic font-lora">"The Journey to Becoming a Great Student"</span>
-              </div>
-            </div>
+            <p className="text-lg md:text-xl text-white/80 max-w-2xl mx-auto lg:mx-0 leading-relaxed backdrop-blur-sm bg-black/20 p-4 rounded-xl">
+              Empowering individuals with 
+              <span className="font-semibold text-gold"> financial literacy</span>, 
+              <span className="font-semibold text-gold"> academic excellence</span>, and 
+              <span className="font-semibold text-gold"> personal development</span> through my bestselling book.
+            </p>
 
             {/* Enhanced CTA buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start animate-slide-up" style={{ animationDelay: '0.8s' }}>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start animate-slide-up backdrop-blur-sm" style={{ animationDelay: '0.8s' }}>
               <Link to="/book">
-                <Button className="group bg-gradient-to-r from-navy to-navy-light hover:from-navy-light hover:to-navy text-white font-montserrat font-semibold px-8 py-3 text-base transition-all duration-300 transform hover:scale-105 hover:shadow-lg w-full sm:w-auto">
+                <Button className="group bg-gold hover:bg-gold-light text-navy font-montserrat font-bold px-8 py-6 text-lg transition-all duration-300 transform hover:scale-105 hover:shadow-gold/20 hover:shadow-lg w-full sm:w-auto">
                   <span className="mr-2">📚</span>
                   Buy My Book
-                  <svg className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                   </svg>
                 </Button>
               </Link>
               <Link to="/about">
-                <Button variant="outline" className="group border-2 border-navy text-navy hover:bg-navy hover:text-white font-montserrat font-semibold px-8 py-3 text-base transition-all duration-300 transform hover:scale-105 w-full sm:w-auto">
+                <Button variant="outline" className="group border-2 border-white text-white hover:bg-white hover:text-navy font-montserrat font-bold px-8 py-6 text-lg transition-all duration-300 transform hover:scale-105 w-full sm:w-auto backdrop-blur-sm">
                   Learn About Me
-                  <svg className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                   </svg>
                 </Button>
@@ -87,24 +85,18 @@ const EnhancedHero = () => {
             </div>
           </div>
 
-          {/* Enhanced image section */}
+          {/* Enhanced image section with glass effect */}
           <div className="flex justify-center lg:justify-end animate-fade-in" style={{ animationDelay: '1s' }}>
             <div className="relative group">
-              {/* Background decorative elements */}
-              <div className="absolute -bottom-8 -right-8 w-72 h-72 bg-gradient-to-br from-gold/20 to-navy/20 rounded-full blur-3xl transition-all duration-700 group-hover:scale-110"></div>
-              <div className="absolute -top-4 -left-4 w-48 h-48 bg-gradient-to-br from-navy/10 to-gold/10 rounded-full blur-2xl transition-all duration-700 group-hover:scale-110"></div>
-              
-              {/* Main image container */}
-              <div className="relative z-10 bg-white p-2 rounded-2xl shadow-2xl transition-all duration-500 group-hover:shadow-3xl group-hover:-translate-y-2">
+              <div className="absolute -inset-1 bg-gradient-to-r from-gold via-white to-navy opacity-75 blur-2xl group-hover:opacity-100 transition duration-1000"></div>
+              <div className="relative bg-black/20 backdrop-blur-xl p-2 rounded-2xl shadow-2xl transition-all duration-500 group-hover:-translate-y-2">
                 <img 
                   src="/lovable-uploads/ac1830de-9ab7-4ac8-b7e3-93b41071cb14.png" 
                   alt="Dr. Awosanya Yusuff" 
                   className="relative z-10 rounded-xl shadow-xl max-w-full h-auto transition-all duration-500 group-hover:scale-105" 
                   style={{ maxHeight: '500px' }}
                 />
-                
-                {/* Floating badge */}
-                <div className="absolute -bottom-4 -left-4 bg-gradient-to-r from-gold to-gold-light text-navy px-4 py-2 rounded-full shadow-lg font-montserrat font-bold text-sm animate-pulse">
+                <div className="absolute -bottom-4 -left-4 bg-gradient-to-r from-gold to-white text-navy px-6 py-3 rounded-full shadow-lg font-montserrat font-bold text-sm animate-pulse backdrop-blur-md">
                   ✨ PhD Finance
                 </div>
               </div>
